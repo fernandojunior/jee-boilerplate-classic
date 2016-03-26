@@ -8,6 +8,13 @@
 * Maven
 * M2Eclipse Plugin
 
+## Guides
+
+* [The Java EE 6 Tutorial](https://docs.oracle.com/javaee/6/tutorial/doc/index.html)
+* [Coreservlets](http://www.coreservlets.com/)
+* [Hibernate user guide](http://docs.jboss.org/hibernate/orm/5.1/userguide/html_single/Hibernate_User_Guide.html)
+* [Jersey user guide](https://jersey.java.net/documentation/latest/user-guide.html)
+
 ## References
 
 * [Java EE versus Spring: retomando a discussão](http://blog.caelum.com.br/java-ee-versus-spring-retomando-a-discussao/)
