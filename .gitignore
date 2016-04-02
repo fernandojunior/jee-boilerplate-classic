@@ -27,6 +27,7 @@ local.properties
 .loadpath
 .recommenders
 RemoteSystemsTempFiles
+Servers
 
 # Eclipse Core
 .project
