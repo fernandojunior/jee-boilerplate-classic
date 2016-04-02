@@ -17,6 +17,7 @@
 
 ## References
 
+* [Maven Repository](http://mvnrepository.com/)
 * [Java EE versus Spring: retomando a discussão](http://blog.caelum.com.br/java-ee-versus-spring-retomando-a-discussao/)
 * [How not to hate Spring in 2016](https://spring.io/blog/2015/11/29/how-not-to-hate-spring-in-2016)
 * [Running a MVC app using Spring Boot + Hibernate + MySql](http://stackoverflow.com/questions/24514981/running-a-mvc-app-using-spring-boot-hibernate-mysql)
