@@ -17,15 +17,16 @@ public class TestEntities extends TestCase {
 	private String database = "test.db12";
 
 	private SessionFactory sessionFactory = null;
+	private Session session = null;
 
 	@SuppressWarnings("unused")
-	private void setSessionFactory() {
+	private void createSessionFactory() {
 		// A SessionFactory is set up once for an application!
 		final StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure().build();
 		sessionFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
 	}
 
-	public void setSessionFactory(String filename) {
+	public void createSessionFactory(String filename) {
 		// http://stackoverflow.com/questions/22200773/hibernate-cfg-xml-modification-on-runtime
 		// http://stackoverflow.com/questions/6437153/hibernate-changing-cfg-properties-at-runtime
 		Configuration configuration = new Configuration();
@@ -42,18 +43,24 @@ public class TestEntities extends TestCase {
 	}
 
 	protected void setUp() {
-		setSessionFactory(database);
+		createSessionFactory(database);
+		session = sessionFactory.openSession();
+		session.beginTransaction();
+	}
+
+	public Event createEvent(String title, Date date) {
+		return new Event(title, date);
 	}
 
 	public void testMain() {
-		Session session = sessionFactory.openSession();
-		session.beginTransaction();
 
-		// Creating Event entity that will be saved to the sqlite database
-		Event helloWorld = new Event("Hello World", new Date());
+		// Creating entities that will be saved to the sqlite database
+		Event hello = createEvent("Hello", new Date());
+		Event world = createEvent("World", new Date());
 
 		// Saving to the database
-		session.save(helloWorld);
+		session.save(hello);
+		session.save(world);
 
 		// Committing the change in the database.
 		session.getTransaction().commit();
@@ -62,19 +69,19 @@ public class TestEntities extends TestCase {
 		@SuppressWarnings("unchecked")
 		List<Event> result = session.createQuery("from Event").list();
 
-		for (Event event : (List<Event>) result) {
-			System.out.println("Event (" + event.getDate() + ") : " + event.getTitle());
-		}
+		assertTrue(result != null);
+		assertTrue(result.size() == 2);
+		assertTrue(result.get(0).getTitle() == "Hello");
+		assertTrue(result.get(1).getTitle() == "World");
 
 		// session.getTransaction().rollback();
 
-		if (session != null) {
-			session.close();
-		}
-
-		if (!new File(database).delete()) {
-			assertTrue(false);
-		}
-
 	}
+
+	protected void tearDown() {
+		session.close();
+		sessionFactory.close();
+		new File(database).delete();
+	}
+
 }

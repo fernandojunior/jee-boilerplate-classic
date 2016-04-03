@@ -2,21 +2,17 @@ package foo.bar.entities;
 
 import java.util.Date;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import org.hibernate.annotations.GenericGenerator;
+import database.Model;
 
 /**
  * The persistent class for the contact database table.
  * 
  */
 @Entity
-public class Event {
-
-	private Integer id;
+public class Event extends Model {
 
 	private String title;
 
@@ -28,17 +24,6 @@ public class Event {
 	public Event(String title, Date date) {
 		this.title = title;
 		this.date = date;
-	}
-
-	@Id
-	@GeneratedValue(generator = "increment")
-	@GenericGenerator(name = "increment", strategy = "increment")
-	public Integer getId() {
-		return this.id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
 	}
 
 	public String getTitle() {
