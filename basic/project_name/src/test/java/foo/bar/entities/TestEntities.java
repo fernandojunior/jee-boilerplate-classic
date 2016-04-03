@@ -10,14 +10,14 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 
+import database.Manager;
 import junit.framework.TestCase;
 
 public class TestEntities extends TestCase {
 
 	private String database = "test.db12";
-
-	private SessionFactory sessionFactory = null;
 	private Session session = null;
+	private SessionFactory sessionFactory = null;
 
 	@SuppressWarnings("unused")
 	private void createSessionFactory() {
@@ -27,11 +27,7 @@ public class TestEntities extends TestCase {
 	}
 
 	public void createSessionFactory(String filename) {
-		// http://stackoverflow.com/questions/22200773/hibernate-cfg-xml-modification-on-runtime
-		// http://stackoverflow.com/questions/6437153/hibernate-changing-cfg-properties-at-runtime
 		Configuration configuration = new Configuration();
-
-		// <!-- Database connection settings -->
 		configuration.setProperty("hibernate.connection.driver_class", "org.sqlite.JDBC");
 		configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.SQLiteDialect");
 		configuration.setProperty("hibernate.connection.url", "jdbc:sqlite:" + filename);
@@ -54,20 +50,23 @@ public class TestEntities extends TestCase {
 
 	public void testMain() {
 
+		Manager<Event> manager = Manager.create(Event.class, session);
+
 		// Creating entities that will be saved to the sqlite database
 		Event hello = createEvent("Hello", new Date());
 		Event world = createEvent("World", new Date());
 
 		// Saving to the database
-		session.save(hello);
-		session.save(world);
+		manager.save(hello);
+		manager.save(world);
 
 		// Committing the change in the database.
 		session.getTransaction().commit();
 
+		List<Event> result = manager.getAll();
+
 		// Fetching saved data
-		@SuppressWarnings("unchecked")
-		List<Event> result = session.createQuery("from Event").list();
+		// List<Event> result = session.createQuery("from Event").list();
 
 		assertTrue(result != null);
 		assertTrue(result.size() == 2);
