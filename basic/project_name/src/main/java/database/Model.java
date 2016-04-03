@@ -9,6 +9,12 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+/**
+ * Base class for custom entity models.
+ * 
+ * @author Fernando Felix do Nascimento Junior
+ *
+ */
 @MappedSuperclass
 public class Model {
 
@@ -18,6 +24,9 @@ public class Model {
 
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date dateCreated = new Date();
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateUpdated = new Date();
 
 	public Long getId() {
 		return id;
@@ -33,6 +42,14 @@ public class Model {
 
 	public void setDateCreated(Date dateCreated) {
 		this.dateCreated = dateCreated;
+	}
+
+	public Date getDateUpdated() {
+		return dateUpdated;
+	}
+
+	public void setDateUpdated(Date dateUpdated) {
+		this.dateUpdated = dateUpdated;
 	}
 
 }
