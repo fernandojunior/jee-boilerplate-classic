@@ -43,8 +43,8 @@ public class Manager<T extends Model> {
 		return session.createQuery(query);
 	}
 
-	public Criteria createQuery(Class<T> type) {
-		return session.createCriteria(type);
+	public Criteria createCriteria() {
+		return session.createCriteria(model);
 	}
 
 	public void delete(T o) {
@@ -57,7 +57,7 @@ public class Manager<T extends Model> {
 
 	@SuppressWarnings("unchecked")
 	public List<T> getAll() {
-		return session.createCriteria(model).list();
+		return createCriteria().list();
 	}
 
 	public static <M extends Model> Manager<M> create(Class<M> o, Session session) {
