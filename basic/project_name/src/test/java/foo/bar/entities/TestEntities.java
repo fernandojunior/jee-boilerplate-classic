@@ -3,6 +3,7 @@ package foo.bar.entities;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
@@ -11,6 +12,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 
 import database.Manager;
+import database.HibernateUtil;
 import junit.framework.TestCase;
 
 public class TestEntities extends TestCase {
@@ -27,14 +29,8 @@ public class TestEntities extends TestCase {
 	}
 
 	public void createSessionFactory(String filename) {
-		Configuration configuration = new Configuration();
-		configuration.setProperty("hibernate.connection.driver_class", "org.sqlite.JDBC");
-		configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.SQLiteDialect");
+		Configuration configuration = HibernateUtil.createConfiguration(null, null);
 		configuration.setProperty("hibernate.connection.url", "jdbc:sqlite:" + filename);
-		configuration.setProperty("hibernate.show_sql", "true");
-		configuration.setProperty("hibernate.format_sql", "true");
-		configuration.setProperty("hibernate.hbm2ddl.auto", "update");
-		configuration.addAnnotatedClass(Event.class);
 		sessionFactory = configuration.buildSessionFactory();
 	}
 
@@ -49,6 +45,8 @@ public class TestEntities extends TestCase {
 	}
 
 	public void testMain() {
+
+		assertTrue(new File(database).isFile());
 
 		Manager<Event> manager = Manager.create(Event.class, session);
 
