@@ -1,7 +1,5 @@
 package database;
 
-import java.util.Properties;
-
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
@@ -39,14 +37,13 @@ public class HibernateUtil {
 	// return sessionFactory;
 	// }
 
-	public static SessionFactory createSessionFactory(String resourceName, Properties properties) {
-		Configuration configuration = createConfiguration(resourceName, properties);
-		StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-				.applySettings(configuration.getProperties()).build();
-		MetadataSources sources = new MetadataSources(registry);
-		return sources.buildMetadata().buildSessionFactory();
-	}
-
+	/**
+	 * Creates a standard session factory based on settings of a configuration.
+	 * 
+	 * @param configuration
+	 *            The configuration
+	 * @return A standard session factory
+	 */
 	public static SessionFactory createSessionFactory(Configuration configuration) {
 		StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
 				.applySettings(configuration.getProperties()).build();
@@ -54,36 +51,35 @@ public class HibernateUtil {
 		return sources.buildMetadata().buildSessionFactory();
 	}
 
-	public static void registerAnnoteatedClass(Configuration configuration) {
-		configuration.addAnnotatedClass(Event.class);
-	}
-
-	public static Configuration createConfiguration(String resourceName) {
-		return createConfiguration(resourceName, null);
-	}
-
 	/**
-	 * Creates a Hibernate configuration based on a resource file. A properties
-	 * object can be passed optionally as argument to add or overwrite resource
-	 * settings.
+	 * Creates a Hibernate configuration based on a resource file wit Annotated
+	 * classes registered dynamically.
 	 * 
 	 * @param resource
-	 *            The resource name. If not given, Hibernate handles the default
-	 *            configuration resource.
-	 * @param properties
-	 *            Optional properties
+	 *            The resource name. If none given, Hibernate handles the
+	 *            default configuration resource.
+	 * @see HibernateUtil#registerAnnoteatedClass(Configuration)
+	 * 
 	 * @return A Hibernate configuration
 	 */
-	public static Configuration createConfiguration(String resource, Properties properties) {
+	public static Configuration createConfiguration(String resource) {
 		Configuration configuration = new Configuration();
 		if (resource == null)
 			configuration.configure();
 		else
 			configuration.configure(resource);
-		if (properties != null)
-			configuration.addProperties(properties);
 		registerAnnoteatedClass(configuration);
 		return configuration;
+	}
+
+	/**
+	 * Adds the entity model classes into a configuration file that will be used
+	 * by Hibernate to map.
+	 * 
+	 * @param configuration
+	 */
+	public static void registerAnnoteatedClass(Configuration configuration) {
+		configuration.addAnnotatedClass(Event.class);
 	}
 
 }
