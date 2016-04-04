@@ -29,7 +29,7 @@ public class TestEntities extends TestCase {
 	}
 
 	public void createSessionFactory(String filename) {
-		Configuration configuration = HibernateUtil.createConfiguration(null, null);
+		Configuration configuration = HibernateUtil.createConfiguration("hibernate.cfg.xml");
 		configuration.setProperty("hibernate.connection.url", "jdbc:sqlite:" + filename);
 		sessionFactory = configuration.buildSessionFactory();
 	}
