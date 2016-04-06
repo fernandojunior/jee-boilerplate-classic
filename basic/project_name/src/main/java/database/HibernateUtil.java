@@ -1,5 +1,6 @@
 package database;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
@@ -21,34 +22,39 @@ import foo.bar.entities.Event;
  */
 public class HibernateUtil {
 
-	// private static final SessionFactory sessionFactory;
-	//
-	// static {
-	// try {
-	// sessionFactory =
-	// createSessionFactory(createConfiguration("hibernate.cfg.xml"));
-	// } catch (Throwable ex) {
-	// System.err.println("Initial SessionFactory creation failed." + ex);
-	// throw new ExceptionInInitializerError(ex);
-	// }
-	// }
-	//
-	// public static SessionFactory getSessionFactory() {
-	// return sessionFactory;
-	// }
+	private static SessionFactory sessionFactory;
+
+	public static SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+
+	public static void setSessionFactory(SessionFactory sessionFactory) {
+		HibernateUtil.sessionFactory = sessionFactory;
+	}
 
 	/**
-	 * Creates a standard session factory based on settings of a configuration.
+	 * Build a standard session factory for the application based on settings of
+	 * the default Hibernate configuration.
 	 * 
-	 * @param configuration
-	 *            The configuration
 	 * @return A standard session factory
 	 */
-	public static SessionFactory createSessionFactory(Configuration configuration) {
-		StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
-				.applySettings(configuration.getProperties()).build();
-		MetadataSources sources = new MetadataSources(registry);
-		return sources.buildMetadata().buildSessionFactory();
+	public static SessionFactory buildSessionFactory() {
+		if (sessionFactory == null) {
+			StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure().build();
+			MetadataSources sources = new MetadataSources(registry);
+			sessionFactory = sources.buildMetadata().buildSessionFactory();
+		}
+		return sessionFactory;
+	}
+
+	public static Session getSession() {
+		Session session = null;
+		try {
+			session = sessionFactory.getCurrentSession();
+		} catch (org.hibernate.HibernateException he) {
+			session = sessionFactory.openSession();
+		}
+		return session;
 	}
 
 	/**
