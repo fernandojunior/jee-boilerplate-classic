@@ -11,7 +11,7 @@ import org.hibernate.SessionFactory;
  *
  */
 @WebListener
-public class ContextListener implements ServletContextListener {
+public class SessionFactoryListener implements ServletContextListener {
 
 	private SessionFactory sessionFactory = null;
 
