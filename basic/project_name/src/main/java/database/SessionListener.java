@@ -24,7 +24,7 @@ public class SessionListener implements HttpSessionListener {
 	public void sessionCreated(HttpSessionEvent e) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 		session = sessionFactory.openSession();
-		e.getSession().setAttribute("hibernate_session", session);
+		e.getSession().setAttribute("database_session", session);
 	}
 
 	/**

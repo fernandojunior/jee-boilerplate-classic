@@ -30,7 +30,7 @@ public class EventServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		session = (Session) request.getSession(true).getAttribute("hibernate_session");
+		session = (Session) request.getSession(true).getAttribute("database_session");
 		session.beginTransaction();
 
 		Manager<Event> manager = Manager.create(Event.class, session);
