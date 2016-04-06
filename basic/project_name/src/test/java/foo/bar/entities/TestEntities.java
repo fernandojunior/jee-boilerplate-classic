@@ -3,14 +3,9 @@ package foo.bar.entities;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
-
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-
 import database.Manager;
 import database.HibernateUtil;
 import junit.framework.TestCase;
@@ -21,15 +16,8 @@ public class TestEntities extends TestCase {
 	private Session session = null;
 	private SessionFactory sessionFactory = null;
 
-	@SuppressWarnings("unused")
-	private void createSessionFactory() {
-		// A SessionFactory is set up once for an application!
-		final StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure().build();
-		sessionFactory = new MetadataSources(registry).buildMetadata().buildSessionFactory();
-	}
-
 	public void createSessionFactory(String filename) {
-		Configuration configuration = HibernateUtil.createConfiguration("hibernate.cfg.xml");
+		Configuration configuration = HibernateUtil.createConfiguration("test.cfg.xml");
 		configuration.setProperty("hibernate.connection.url", "jdbc:sqlite:" + filename);
 		sessionFactory = configuration.buildSessionFactory();
 	}
