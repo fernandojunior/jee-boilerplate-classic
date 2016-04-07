@@ -12,8 +12,17 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<c:set var="helloWorld" value="Hello World"/>
+	<title>Insert title here</title>
 
+	<!-- Bootstrap Core CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+	<!-- Custom CSS -->
+    <!-- <link href="css/style.css" rel="stylesheet"> -->
+
+</head>
+<!--
+<c:set var="helloWorld" value="Hello World"/>
 <c:if test="${fn:endsWith(helloWorld, 'World')}">
 	<c:out value="${ helloWorld }"></c:out>
 </c:if>
@@ -28,6 +37,7 @@
 			<h1>Hello World</h1>
 		</div>
 	</header>
+
 	<nav class="navbar navbar-default" role="navigation">
         <div class="container">
             <div class="navbar-brand">
@@ -35,14 +45,20 @@
             </div>
         </div>
     </nav>
+
 	<main>
         <div class="container">
             <div id="content">
 	            <div class="row">
 	            	<section class="col-md-4">
+
 							Hello World
+
 					</section>
 					<section class="col-md-4">
+
+							Hello World
+
 					</section>
 				</div>
             </div>
@@ -56,8 +72,10 @@
             </span>
         </div>
     </footer>
+
 	<!-- jQuery -->
 	<script src="https://code.jquery.com/jquery-2.2.3.js"></script>
+
 	<!-- Bootstrap -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" ></script>
 
