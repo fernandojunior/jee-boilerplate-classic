@@ -6,25 +6,60 @@
 <%@ taglib prefix="x" uri="http://java.sun.com/jsp/jstl/xml" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Insert title here</title>
-</head>
-<body>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <c:set var="helloWorld" value="Hello World"/>
 
 <c:if test="${fn:endsWith(helloWorld, 'World')}">
 	<c:out value="${ helloWorld }"></c:out>
 </c:if>
-
-<br>
-
 <c:forTokens items="${ helloWorld }" delims=" " var="letter">
 	<c:out value="${ letter }"/><br>
 </c:forTokens>
+ -->
+<body>
+
+	<header>
+		<div class="container">
+			<h1>Hello World</h1>
+		</div>
+	</header>
+	<nav class="navbar navbar-default" role="navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                Hello World
+            </div>
+        </div>
+    </nav>
+	<main>
+        <div class="container">
+            <div id="content">
+	            <div class="row">
+	            	<section class="col-md-4">
+							Hello World
+					</section>
+					<section class="col-md-4">
+					</section>
+				</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <span class="">
+            &copy; 2016 Fernando Felix do Nascimento Junior
+            </span>
+        </div>
+    </footer>
+	<!-- jQuery -->
+	<script src="https://code.jquery.com/jquery-2.2.3.js"></script>
+	<!-- Bootstrap -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" ></script>
 
 </body>
 </html>
