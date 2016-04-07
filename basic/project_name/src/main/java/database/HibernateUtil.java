@@ -1,10 +1,6 @@
 package database;
 
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 
 import foo.bar.entities.Event;
@@ -40,21 +36,9 @@ public class HibernateUtil {
 	 */
 	public static SessionFactory buildSessionFactory() {
 		if (sessionFactory == null) {
-			StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure().build();
-			MetadataSources sources = new MetadataSources(registry);
-			sessionFactory = sources.buildMetadata().buildSessionFactory();
+			sessionFactory = createConfiguration("hibernate.cfg.xml").buildSessionFactory();
 		}
 		return sessionFactory;
-	}
-
-	public static Session getSession() {
-		Session session = null;
-		try {
-			session = sessionFactory.getCurrentSession();
-		} catch (org.hibernate.HibernateException he) {
-			session = sessionFactory.openSession();
-		}
-		return session;
 	}
 
 	/**
