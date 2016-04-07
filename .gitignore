@@ -31,6 +31,7 @@ Servers
 # Eclipse Core
 # .project
 # .settings/
+# .classpath
 
 # External tool builders
 .externalToolBuilders/
@@ -43,9 +44,6 @@ Servers
 
 # CDT-specific (C/C++ Development Tooling)
 .cproject
-
-# JDT-specific (Eclipse Java Development Tools)
-# .classpath
 
 # Java annotation processor (APT)
 .factorypath
