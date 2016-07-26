@@ -14,13 +14,27 @@
 </head>
 <body>
 
-	Events
+	Servlet: foo.bar.servlets.EventServlet
+	
+	<br>
+	
+	Resource: <a href="/project_name/event">/event</a>
+	
+	<br>
+	
+	Template: <a href="/project_name/events.jsp">/events.jsp</a>
+	
+	<br>
+
+	<h1> Events </h1>
 	
 	<br>
 	
 	<c:forEach items="${requestScope.data}" var="item">
 	    ${item.title} 
 	</c:forEach>
+	
+	<br>
 
 </body>
 </html>
