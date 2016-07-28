@@ -1,11 +1,13 @@
 package database;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Criteria;
-import org.hibernate.Query;
+import org.hibernate.query.Query;
 import org.hibernate.Session;
+import org.hibernate.InstantiationException;
 
 /**
  * CRUD Repository to manage entities.
@@ -20,9 +22,39 @@ public class Manager<T extends Model> {
 	private Class<T> model;
 	private Session session;
 
+	/**
+	 * Constructor for generic managers
+	 *
+	 * @param model
+	 * @param session
+	 */
 	public Manager(Class<T> model, Session session) {
 		this.model = model;
 		this.session = session;
+	}
+
+	/**
+	 * Constructor for non-generic Manager subclasses.
+	 * {@link http://stackoverflow.com/questions/6624113/get-type-name-for-generic-parameter-of-generic-class}
+	 */
+	@SuppressWarnings("unchecked")
+	public Manager(Session session) {
+		this.session = session;
+		try {
+			this.model = ((Class<T>) ((ParameterizedType) getClass().getGenericSuperclass())
+					.getActualTypeArguments()[0]);
+		} catch (ClassCastException e) {
+			throw new InstantiationException("Constructor reserved only for non-generic subclasses. " + e.getMessage(),
+					Manager.class);
+		}
+	}
+
+	public Class<T> getModel() {
+		return model;
+	}
+
+	public Session getSession() {
+		return session;
 	}
 
 	public Long save(T o) {
@@ -39,10 +71,11 @@ public class Manager<T extends Model> {
 		session.saveOrUpdate(o);
 	}
 
-	public Query createQuery(String query) {
-		return session.createQuery(query);
+	public Query<T> createQuery(String query) {
+		return session.createQuery(query, model);
 	}
 
+	@SuppressWarnings("deprecation")
 	public Criteria createCriteria() {
 		return session.createCriteria(model);
 	}
