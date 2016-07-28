@@ -7,7 +7,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import database.Manager;
-import foor.bar.managers.EventManager;
+import foo.bar.managers.EventManager;
 import database.HibernateUtil;
 import junit.framework.TestCase;
 
