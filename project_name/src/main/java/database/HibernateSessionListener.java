@@ -9,12 +9,14 @@ import org.hibernate.SessionFactory;
 
 /**
  * A Http Session Listener for manage Hibernate Session lifecycle
+ * 
+ * @author Fernando Felix do Nascimento Junior
  *
  */
 @WebListener
-public class SessionListener implements HttpSessionListener {
+public class HibernateSessionListener implements HttpSessionListener {
 
-	public Session session = null;
+	public Session hibernateSession = null;
 
 	/**
 	 * {@inheritDoc}
@@ -23,8 +25,8 @@ public class SessionListener implements HttpSessionListener {
 	 */
 	public void sessionCreated(HttpSessionEvent e) {
 		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-		session = sessionFactory.openSession();
-		e.getSession().setAttribute("database_session", session);
+		hibernateSession = sessionFactory.openSession();
+		e.getSession().setAttribute("hibernate_session", hibernateSession);
 	}
 
 	/**
@@ -33,7 +35,7 @@ public class SessionListener implements HttpSessionListener {
 	 * @see HttpSessionListener#sessionDestroyed(HttpSessionEvent)
 	 */
 	public void sessionDestroyed(HttpSessionEvent e) {
-		session.close();
+		hibernateSession.close();
 	}
 
 }

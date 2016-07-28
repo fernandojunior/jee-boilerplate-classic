@@ -8,12 +8,14 @@ import org.hibernate.SessionFactory;
 
 /**
  * A Servlet Context Listener to manage Hibernate Session Factory lifecycle
+ * 
+ * @author Fernando Felix do Nascimento Junior
  *
  */
 @WebListener
-public class SessionFactoryListener implements ServletContextListener {
+public class HibernateSessionFactoryListener implements ServletContextListener {
 
-	private SessionFactory sessionFactory = null;
+	private SessionFactory hibernateSessionFactory = null;
 
 	/**
 	 * {@inheritDoc}
@@ -21,7 +23,7 @@ public class SessionFactoryListener implements ServletContextListener {
 	 * @see ServletContextListener#contextInitialized(ServletContextEvent)
 	 */
 	public void contextInitialized(ServletContextEvent e) {
-		sessionFactory = HibernateUtil.buildSessionFactory();
+		hibernateSessionFactory = HibernateUtil.buildSessionFactory();
 	}
 
 	/**
@@ -30,7 +32,7 @@ public class SessionFactoryListener implements ServletContextListener {
 	 * @see ServletContextListener#contextDestroyed(ServletContextEvent)
 	 */
 	public void contextDestroyed(ServletContextEvent e) {
-		sessionFactory.close();
+		hibernateSessionFactory.close();
 	}
 
 }
