@@ -1,4 +1,4 @@
-package database;
+package core;
 
 import javax.servlet.annotation.WebListener;
 import javax.servlet.http.HttpSessionEvent;

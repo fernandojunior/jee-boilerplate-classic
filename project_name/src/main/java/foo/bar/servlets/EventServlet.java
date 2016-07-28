@@ -12,8 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.hibernate.Session;
 
-import database.Manager;
+import core.BaseRepository;
 import foo.bar.entities.Event;
+import foo.bar.repositories.EventRepository;
 
 /**
  * Servlet implementation class Test
@@ -32,15 +33,15 @@ public class EventServlet extends HttpServlet {
 		session = (Session) request.getSession(true).getAttribute("hibernate_session");
 		session.beginTransaction();
 
-		Manager<Event> manager = Manager.create(Event.class, session);
+		BaseRepository<Event> eventRepository = new EventRepository(session);
 		Event hello = new Event("Hello", new Date());
 		Event world = new Event("World", new Date());
-		manager.save(hello);
-		manager.save(world);
+		eventRepository.save(hello);
+		eventRepository.save(world);
 
 		session.getTransaction().commit();
 
-		request.setAttribute("data", manager.getAll());
+		request.setAttribute("data", eventRepository.getAll());
 		RequestDispatcher dispatcher = request.getRequestDispatcher("events.jsp");
 		dispatcher.forward(request, response);
 	}

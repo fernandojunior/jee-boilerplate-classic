@@ -1,4 +1,4 @@
-package database;
+package core;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Date;
@@ -10,47 +10,47 @@ import org.hibernate.Session;
 import org.hibernate.InstantiationException;
 
 /**
- * CRUD Repository to manage entities.
+ * Basic CRUD Repository for entities.
  * 
  * @author Fernando Felix do Nascimento Junior
  *
  * @param <T>
- *            Entity model to manage
+ *            Base entity model
  */
-public class Manager<T extends Model> {
+public class BaseRepository<T extends BaseEntity> {
 
-	private Class<T> model;
+	private Class<T> entityClass;
 	private Session session;
 
 	/**
-	 * Constructor for generic managers
+	 * Constructor for generic repositories
 	 *
 	 * @param model
 	 * @param session
 	 */
-	public Manager(Class<T> model, Session session) {
-		this.model = model;
+	public BaseRepository(Class<T> model, Session session) {
+		this.entityClass = model;
 		this.session = session;
 	}
 
 	/**
-	 * Constructor for non-generic Manager subclasses.
+	 * Constructor for non-generic BaseRepository subclasses.
 	 * {@link http://stackoverflow.com/questions/6624113/get-type-name-for-generic-parameter-of-generic-class}
 	 */
 	@SuppressWarnings("unchecked")
-	public Manager(Session session) {
+	public BaseRepository(Session session) {
 		this.session = session;
 		try {
-			this.model = ((Class<T>) ((ParameterizedType) getClass().getGenericSuperclass())
+			this.entityClass = ((Class<T>) ((ParameterizedType) getClass().getGenericSuperclass())
 					.getActualTypeArguments()[0]);
 		} catch (ClassCastException e) {
 			throw new InstantiationException("Constructor reserved only for non-generic subclasses. " + e.getMessage(),
-					Manager.class);
+					BaseRepository.class);
 		}
 	}
 
-	public Class<T> getModel() {
-		return model;
+	public Class<T> getEntityClass() {
+		return entityClass;
 	}
 
 	public Session getSession() {
@@ -72,12 +72,12 @@ public class Manager<T extends Model> {
 	}
 
 	public Query<T> createQuery(String query) {
-		return session.createQuery(query, model);
+		return session.createQuery(query, entityClass);
 	}
 
 	@SuppressWarnings("deprecation")
 	public Criteria createCriteria() {
-		return session.createCriteria(model);
+		return session.createCriteria(entityClass);
 	}
 
 	public void delete(T o) {
@@ -85,7 +85,7 @@ public class Manager<T extends Model> {
 	}
 
 	public T get(Long id) {
-		return (T) session.get(model, id);
+		return (T) session.get(entityClass, id);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -93,8 +93,8 @@ public class Manager<T extends Model> {
 		return createCriteria().list();
 	}
 
-	public static <M extends Model> Manager<M> create(Class<M> o, Session session) {
-		return new Manager<M>(o, session);
+	public static <M extends BaseEntity> BaseRepository<M> create(Class<M> o, Session session) {
+		return new BaseRepository<M>(o, session);
 	}
 
 }

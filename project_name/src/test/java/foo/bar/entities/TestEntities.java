@@ -6,9 +6,10 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import database.Manager;
-import foo.bar.managers.EventManager;
-import database.HibernateUtil;
+
+import core.BaseRepository;
+import core.HibernateUtil;
+import foo.bar.repositories.EventRepository;
 import junit.framework.TestCase;
 
 public class TestEntities extends TestCase {
@@ -33,18 +34,16 @@ public class TestEntities extends TestCase {
 	}
 
 	public void testMain() {
-		// Test main method with generic manager
-		main(Manager.create(Event.class, session));
+		// Test main method with generic repository
+		main(BaseRepository.create(Event.class, session));
 
-		// Test main method with event manager
-		main(new EventManager(session));
+		// Test main method with event repository
+		main(new EventRepository(session));
 	}
 
-	public void main(Manager<Event> manager) {
+	public void main(BaseRepository<Event> eventRepository) {
 
 		assertTrue(new File(database).isFile());
-
-		// Manager<Event> manager = Manager.create(Event.class, session);
 
 		// Creating entities that will be saved to the sqlite database
 		Event hello = createEvent("Hello", new Date());
@@ -53,13 +52,13 @@ public class TestEntities extends TestCase {
 		session.beginTransaction();
 
 		// Saving to the database
-		manager.save(hello);
-		manager.save(world);
+		eventRepository.save(hello);
+		eventRepository.save(world);
 
 		// Committing the change in the database.
 		session.getTransaction().commit();
 
-		List<Event> result = manager.getAll();
+		List<Event> result = eventRepository.getAll();
 
 		// Fetching saved data
 		// List<Event> result = session.createQuery("from Event").list();
@@ -70,8 +69,8 @@ public class TestEntities extends TestCase {
 		assertTrue(result.get(1).getTitle() == "World");
 
 		session.beginTransaction();
-		manager.delete(result.get(0));
-		manager.delete(result.get(1));
+		eventRepository.delete(result.get(0));
+		eventRepository.delete(result.get(1));
 		session.getTransaction().commit();
 
 		// session.getTransaction().rollback();

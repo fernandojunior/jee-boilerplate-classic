@@ -1,4 +1,4 @@
-package database;
+package core;
 
 import java.util.Date;
 
@@ -10,13 +10,15 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
- * Base class for custom entity models.
+ * Basic entity model.
  * 
  * @author Fernando Felix do Nascimento Junior
+ * 
+ * @see BaseEntity
  *
  */
 @MappedSuperclass
-public class Model {
+public class BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

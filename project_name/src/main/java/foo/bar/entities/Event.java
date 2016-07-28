@@ -5,14 +5,14 @@ import javax.persistence.Entity;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import database.Model;
+import core.BaseEntity;
 
 /**
- * The persistent class for the contact database table.
+ * The persistent class for the event database table.
  * 
  */
 @Entity
-public class Event extends Model {
+public class Event extends BaseEntity {
 
 	private String title;
 
