@@ -4,29 +4,34 @@ Boilerplate to create a JEE web application using the classic approach.
 
 ## Features
 
-* JDK==1.7
+* JDK==1.8
 * [Eclipse](https://eclipse.org/mars/)==4.5.0
-* [Tomcat](http://tomcat.apache.org/whichversion.html)==7.0
-    * Servlet==3.0
-    * JSP==2.2
-    * EL==2.2
+* [Tomcat](http://tomcat.apache.org/whichversion.html)==8.0
+    * Servlet==3.1
+    * JSP==2.3
+    * EL==3.0
     * WebSocket==1.1
 * [JSTL](https://tomcat.apache.org/taglibs/standard/)==1.2
     * jstl-1.2.jar==1.2
 * [JUnit](https://github.com/junit-team/junit4/wiki/Download-and-Install)==4.12
     * junit-4.12.jar
     * hamcrest-core-1.3.jar
-* [Hibernate](http://docs.jboss.org/hibernate/orm/5.1/quickstart/html_single/#_release_bundle_downloads)==5.1
+* [Hibernate](http://docs.jboss.org/hibernate/orm/5.1/quickstart/html_single/#_release_bundle_downloads)==5.2
     * antlr-2.7.7.jar
+    * cdi-api-1.1-PFD.jar
     * classmate-1.3.0.jar
     * dom4j-1.6.1.jar
+    * el-api-2.2.jar
     * geronimo-jta_1.1_spec-1.1.1.jar
     * hibernate-commons-annotations-5.0.1.Final.jar
-    * hibernate-core-5.1.0.Final.jar
+    * hibernate-core-5.2.1.Final.jar
     * hibernate-jpa-2.1-api-1.0.0.Final.jar
     * jandex-2.0.0.Final.jar
     * javassist-3.20.0-GA.jar
+    * javax.inject-1.jar
+    * jboss-interceptors-api_1.1_spec-1.0.0.Beta1.jar
     * jboss-logging-3.3.0.Final.jar
+    * jsr250-api-1.0.jar
 * SQLite
     * sqlite-jdbc-3.8.11.2.jar
     * [sqlite-dialect](https://github.com/gwenn/sqlite-dialect)
