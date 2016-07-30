@@ -7,15 +7,14 @@ import javax.servlet.annotation.WebListener;
 import org.hibernate.SessionFactory;
 
 /**
- * A Servlet Context Listener to manage Hibernate Session Factory lifecycle
+ * A Servlet Context Listener to build an entity manager factory
  * 
  * @author Fernando Felix do Nascimento Junior
- *
  */
 @WebListener
-public class HibernateSessionFactoryListener implements ServletContextListener {
+public class EntityManagerFactoryListener implements ServletContextListener {
 
-	private SessionFactory hibernateSessionFactory = null;
+	private SessionFactory entityManagerFactory = null;
 
 	/**
 	 * {@inheritDoc}
@@ -23,7 +22,7 @@ public class HibernateSessionFactoryListener implements ServletContextListener {
 	 * @see ServletContextListener#contextInitialized(ServletContextEvent)
 	 */
 	public void contextInitialized(ServletContextEvent e) {
-		hibernateSessionFactory = HibernateUtil.buildSessionFactory();
+		entityManagerFactory = HibernateUtil.buildEntityManagerFactory();
 	}
 
 	/**
@@ -32,7 +31,7 @@ public class HibernateSessionFactoryListener implements ServletContextListener {
 	 * @see ServletContextListener#contextDestroyed(ServletContextEvent)
 	 */
 	public void contextDestroyed(ServletContextEvent e) {
-		hibernateSessionFactory.close();
+		entityManagerFactory.close();
 	}
 
 }

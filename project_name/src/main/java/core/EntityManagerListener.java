@@ -8,15 +8,14 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 /**
- * A Http Session Listener for manage Hibernate Session lifecycle
+ * A Http Session Listener to create session scoped entity managers
  * 
  * @author Fernando Felix do Nascimento Junior
- *
  */
 @WebListener
-public class HibernateSessionListener implements HttpSessionListener {
+public class EntityManagerListener implements HttpSessionListener {
 
-	public Session hibernateSession = null;
+	public Session entityManager = null;
 
 	/**
 	 * {@inheritDoc}
@@ -24,9 +23,9 @@ public class HibernateSessionListener implements HttpSessionListener {
 	 * @see HttpSessionListener#sessionCreated(HttpSessionEvent)
 	 */
 	public void sessionCreated(HttpSessionEvent e) {
-		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-		hibernateSession = sessionFactory.openSession();
-		e.getSession().setAttribute("hibernate_session", hibernateSession);
+		SessionFactory sessionFactory = HibernateUtil.getEntityManagerFactory();
+		entityManager = sessionFactory.openSession();
+		e.getSession().setAttribute("entity_manager", entityManager);
 	}
 
 	/**
@@ -35,7 +34,7 @@ public class HibernateSessionListener implements HttpSessionListener {
 	 * @see HttpSessionListener#sessionDestroyed(HttpSessionEvent)
 	 */
 	public void sessionDestroyed(HttpSessionEvent e) {
-		hibernateSession.close();
+		entityManager.close();
 	}
 
 }

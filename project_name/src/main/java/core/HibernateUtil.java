@@ -3,7 +3,7 @@ package core;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
-import foo.bar.entities.Event;
+import foo.bar.entities.Message;
 
 /**
  * 
@@ -20,7 +20,7 @@ public class HibernateUtil {
 
 	private static SessionFactory sessionFactory;
 
-	public static SessionFactory getSessionFactory() {
+	public static SessionFactory getEntityManagerFactory() {
 		return sessionFactory;
 	}
 
@@ -34,7 +34,7 @@ public class HibernateUtil {
 	 * 
 	 * @return A standard session factory
 	 */
-	public static SessionFactory buildSessionFactory() {
+	public static SessionFactory buildEntityManagerFactory() {
 		if (sessionFactory == null) {
 			sessionFactory = createConfiguration("hibernate.cfg.xml").buildSessionFactory();
 		}
@@ -69,7 +69,7 @@ public class HibernateUtil {
 	 * @param configuration
 	 */
 	public static void registerAnnoteatedClass(Configuration configuration) {
-		configuration.addAnnotatedClass(Event.class);
+		configuration.addAnnotatedClass(Message.class);
 	}
 
 }

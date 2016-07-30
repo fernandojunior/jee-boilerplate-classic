@@ -14,11 +14,10 @@ import javax.persistence.TemporalType;
  * 
  * @author Fernando Felix do Nascimento Junior
  * 
- * @see BaseEntity
- *
+ * @see EntityModel
  */
 @MappedSuperclass
-public class BaseEntity {
+public class EntityModel {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

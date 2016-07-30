@@ -7,30 +7,28 @@ import java.util.List;
 import org.hibernate.Criteria;
 import org.hibernate.query.Query;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.InstantiationException;
 
 /**
- * Basic CRUD Repository for entities.
+ * Generic CRUD Repository for entities.
  * 
  * @author Fernando Felix do Nascimento Junior
- *
- * @param <T>
- *            Base entity model
  */
-public class BaseRepository<T extends BaseEntity> {
+public class GenericRepository<T extends EntityModel> {
 
 	private Class<T> entityClass;
-	private Session session;
+	private Session entityManager;
 
 	/**
 	 * Constructor for generic repositories
 	 *
 	 * @param model
-	 * @param session
+	 * @param entityManager
 	 */
-	public BaseRepository(Class<T> model, Session session) {
+	public GenericRepository(Class<T> model, Session entityManager) {
 		this.entityClass = model;
-		this.session = session;
+		this.entityManager = entityManager;
 	}
 
 	/**
@@ -38,14 +36,14 @@ public class BaseRepository<T extends BaseEntity> {
 	 * {@link http://stackoverflow.com/questions/6624113/get-type-name-for-generic-parameter-of-generic-class}
 	 */
 	@SuppressWarnings("unchecked")
-	public BaseRepository(Session session) {
-		this.session = session;
+	public GenericRepository(Session entityManager) {
+		this.entityManager = entityManager;
 		try {
 			this.entityClass = ((Class<T>) ((ParameterizedType) getClass().getGenericSuperclass())
 					.getActualTypeArguments()[0]);
 		} catch (ClassCastException e) {
 			throw new InstantiationException("Constructor reserved only for non-generic subclasses. " + e.getMessage(),
-					BaseRepository.class);
+					GenericRepository.class);
 		}
 	}
 
@@ -53,39 +51,47 @@ public class BaseRepository<T extends BaseEntity> {
 		return entityClass;
 	}
 
-	public Session getSession() {
-		return session;
+	public Session getEntityManager() {
+		return entityManager;
+	}
+
+	public Transaction beginTransaction() {
+		return entityManager.beginTransaction();
+	}
+
+	public void commit() {
+		entityManager.getTransaction().commit();
 	}
 
 	public Long save(T o) {
-		return (Long) session.save(o);
+		return (Long) entityManager.save(o);
 	}
 
 	public void update(T o) {
 		o.setDateUpdated(new Date());
-		session.update(o);
+		entityManager.update(o);
 	}
 
 	public void saveOrUpdate(T o) {
 		o.setDateUpdated(new Date());
-		session.saveOrUpdate(o);
+		entityManager.saveOrUpdate(o);
 	}
 
 	public Query<T> createQuery(String query) {
-		return session.createQuery(query, entityClass);
+		return entityManager.createQuery(query, entityClass);
 	}
 
 	@SuppressWarnings("deprecation")
 	public Criteria createCriteria() {
-		return session.createCriteria(entityClass);
+		return entityManager.createCriteria(entityClass);
 	}
 
 	public void delete(T o) {
-		session.delete(o);
+		entityManager.delete(o);
 	}
 
 	public T get(Long id) {
-		return (T) session.get(entityClass, id);
+		return (T) entityManager.get(entityClass, id);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -93,8 +99,8 @@ public class BaseRepository<T extends BaseEntity> {
 		return createCriteria().list();
 	}
 
-	public static <M extends BaseEntity> BaseRepository<M> create(Class<M> o, Session session) {
-		return new BaseRepository<M>(o, session);
+	public static <E extends EntityModel> GenericRepository<E> create(Class<E> o, Session entityManager) {
+		return new GenericRepository<E>(o, entityManager);
 	}
 
 }
