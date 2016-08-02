@@ -51,8 +51,17 @@ public class GenericRepository<T extends EntityModel> {
 		return entityClass;
 	}
 
+	public String getEntityName() {
+		return entityClass.getSimpleName();
+	}
+
 	public Session getEntityManager() {
 		return entityManager;
+	}
+
+	@SuppressWarnings("deprecation")
+	public Criteria createCriteria() {
+		return entityManager.createCriteria(entityClass);
 	}
 
 	public Transaction beginTransaction() {
@@ -72,7 +81,7 @@ public class GenericRepository<T extends EntityModel> {
 		entityManager.update(o);
 	}
 
-	public void saveOrUpdate(T o) {
+	public void merge(T o) {
 		o.setDateUpdated(new Date());
 		entityManager.saveOrUpdate(o);
 	}
@@ -81,26 +90,21 @@ public class GenericRepository<T extends EntityModel> {
 		return entityManager.createQuery(query, entityClass);
 	}
 
-	@SuppressWarnings("deprecation")
-	public Criteria createCriteria() {
-		return entityManager.createCriteria(entityClass);
-	}
-
-	public void delete(T o) {
+	public void remove(T o) {
 		entityManager.delete(o);
 	}
 
-	public T get(Long id) {
+	public T find(Long id) {
 		return (T) entityManager.get(entityClass, id);
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<T> getAll() {
+	public List<T> findAll() {
 		return createCriteria().list();
 	}
 
-	public static <E extends EntityModel> GenericRepository<E> create(Class<E> o, Session entityManager) {
-		return new GenericRepository<E>(o, entityManager);
+	public static <E extends EntityModel> GenericRepository<E> create(Class<E> entityClass, Session entityManager) {
+		return new GenericRepository<E>(entityClass, entityManager);
 	}
 
 }

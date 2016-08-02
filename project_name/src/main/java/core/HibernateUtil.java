@@ -2,6 +2,7 @@ package core;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.metadata.ClassMetadata;
 
 import foo.bar.entities.Message;
 
@@ -18,27 +19,14 @@ import foo.bar.entities.Message;
  */
 public class HibernateUtil {
 
-	private static SessionFactory sessionFactory;
-
-	public static SessionFactory getEntityManagerFactory() {
-		return sessionFactory;
-	}
-
-	public static void setSessionFactory(SessionFactory sessionFactory) {
-		HibernateUtil.sessionFactory = sessionFactory;
-	}
-
 	/**
 	 * Build a standard session factory for the application based on settings of
 	 * the default Hibernate configuration.
 	 * 
 	 * @return A standard session factory
 	 */
-	public static SessionFactory buildEntityManagerFactory() {
-		if (sessionFactory == null) {
-			sessionFactory = createConfiguration("hibernate.cfg.xml").buildSessionFactory();
-		}
-		return sessionFactory;
+	public static SessionFactory createEntityManagerFactory() {
+		return createConfiguration("hibernate.cfg.xml").buildSessionFactory();
 	}
 
 	/**
@@ -70,6 +58,18 @@ public class HibernateUtil {
 	 */
 	public static void registerAnnoteatedClass(Configuration configuration) {
 		configuration.addAnnotatedClass(Message.class);
+	}
+
+	/**
+	 * Return the entity metadata
+	 *
+	 * @param entityClass
+	 *            The entity class
+	 * @return Entity metadata
+	 */
+	@SuppressWarnings("deprecation")
+	public static ClassMetadata getEntityMetadata(Class<?> entityClass, SessionFactory entityManagerFactory) {
+		return entityManagerFactory.getClassMetadata(entityClass);
 	}
 
 }

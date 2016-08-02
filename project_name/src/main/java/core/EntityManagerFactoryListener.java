@@ -22,7 +22,8 @@ public class EntityManagerFactoryListener implements ServletContextListener {
 	 * @see ServletContextListener#contextInitialized(ServletContextEvent)
 	 */
 	public void contextInitialized(ServletContextEvent e) {
-		entityManagerFactory = HibernateUtil.buildEntityManagerFactory();
+		entityManagerFactory = HibernateUtil.createEntityManagerFactory();
+		e.getServletContext().setAttribute("entity_manager_factory", entityManagerFactory);
 	}
 
 	/**

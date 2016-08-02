@@ -30,15 +30,19 @@ public class MessageServlet extends RepositoryServlet<MessageRepository>implemen
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		try {
-			String action = doAction(request, response);
-			if (action == null)
+			String action = request.getParameter("action");
+			if (action != null)
+				doAction(action, request, response);
+			else
 				post(request, response);
 		} catch (ServletException e) {
 			e.printStackTrace();
+			request.setAttribute("danger", e.getMessage());
+			get(request, response);
 		}
 	}
 
-	protected void get(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void get(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		if (request.getParameter("id") != null)
 			detail(request, response);
 		else
@@ -47,12 +51,12 @@ public class MessageServlet extends RepositoryServlet<MessageRepository>implemen
 
 	public void detail(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		Long id = Long.parseLong(request.getParameter("id"));
-		Message message = getRespository().get(id);
+		Message message = getRespository().find(id);
 		request.setAttribute("message", message);
 	}
 
 	public void all(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		List<Message> messages = getRespository().getAll();
+		List<Message> messages = getRespository().findAll();
 		Collections.reverse(messages);
 		request.setAttribute("messages", messages);
 	}
@@ -69,12 +73,12 @@ public class MessageServlet extends RepositoryServlet<MessageRepository>implemen
 
 	public void delete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		Long id = Long.parseLong(request.getParameter("id"));
-		Message message = getRespository().get(id);
+		Message message = getRespository().find(id);
 		if (message == null) {
 			request.setAttribute("warning", "Message does not exist.");
 		} else {
 			getRespository().beginTransaction();
-			getRespository().delete(message);
+			getRespository().remove(message);
 			getRespository().commit();
 			request.setAttribute("success", "Message was successfully deleted.");
 		}

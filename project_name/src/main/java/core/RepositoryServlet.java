@@ -27,23 +27,6 @@ public class RepositoryServlet<R extends GenericRepository<?>> extends HttpServl
 	private static final long serialVersionUID = 1L;
 
 	private R repository;
-	private String templatePage;
-
-	protected String doAction(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		String action = request.getParameter("action");
-		if (action != null) {
-			try {
-				Method method = this.getClass().getMethod(action, HttpServletRequest.class, HttpServletResponse.class);
-				method.invoke(this, request, response);
-			} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException e) {
-				e.printStackTrace();
-				throw new ServletException("Servlet action " + "does not exist or can not be accessed.", e);
-			}
-		}
-		return action;
-	}
 
 	@SuppressWarnings("unchecked")
 	private Class<R> getRepositoryClass() {
@@ -60,21 +43,45 @@ public class RepositoryServlet<R extends GenericRepository<?>> extends HttpServl
 		}
 	}
 
+	protected R getRespository() {
+		return repository;
+	}
+
+	private Session getEntityManager(HttpServletRequest request) {
+		return (Session) request.getSession(true).getAttribute("entity_manager");
+	}
+
+	protected void forward(String path, HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		RequestDispatcher dispatcher = request.getRequestDispatcher(path);
+		dispatcher.forward(request, response);
+	}
+
+	protected void redirect(String path, HttpServletResponse response) throws ServletException, IOException {
+		response.sendRedirect(path);
+	}
+
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		Session entityManager = (Session) request.getSession(true).getAttribute("entity_manager");
+		Session entityManager = getEntityManager(request);
 		repository = createRepository(entityManager);
-		templatePage = getRespository().getEntityClass().getSimpleName().toLowerCase() + ".jsp";
+		String template = getRespository().getEntityName().toLowerCase() + ".jsp";
 		super.service(request, response);
-		if (!response.isCommitted()) {
-			RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/" + templatePage);
-			dispatcher.forward(request, response);
-		}
+		if (!response.isCommitted())
+			forward("WEB-INF/" + template, request, response);
 	}
 
-	protected R getRespository() {
-		return repository;
+	protected void doAction(String action, HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		try {
+			Method method = this.getClass().getMethod(action, HttpServletRequest.class, HttpServletResponse.class);
+			method.invoke(this, request, response);
+		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
+			e.printStackTrace();
+			throw new ServletException("Servlet action " + action + " does not exist or can not be accessed.", e);
+		}
 	}
 
 }

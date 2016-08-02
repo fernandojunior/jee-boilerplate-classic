@@ -23,8 +23,9 @@ public class EntityManagerListener implements HttpSessionListener {
 	 * @see HttpSessionListener#sessionCreated(HttpSessionEvent)
 	 */
 	public void sessionCreated(HttpSessionEvent e) {
-		SessionFactory sessionFactory = HibernateUtil.getEntityManagerFactory();
-		entityManager = sessionFactory.openSession();
+		SessionFactory entityManagerFactory = (SessionFactory) e.getSession().getServletContext()
+				.getAttribute("entity_manager_factory");
+		entityManager = entityManagerFactory.openSession();
 		e.getSession().setAttribute("entity_manager", entityManager);
 	}
 

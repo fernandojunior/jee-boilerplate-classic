@@ -61,7 +61,7 @@ public class TestMassage extends TestCase {
 		messageRepository.commit();
 
 		// Fetching saved data
-		List<Message> result = messageRepository.getAll();
+		List<Message> result = messageRepository.findAll();
 
 		assertTrue(result != null);
 		assertTrue(result.size() == 2);
@@ -69,8 +69,8 @@ public class TestMassage extends TestCase {
 		assertTrue(result.get(1).getMessage() == "World");
 
 		messageRepository.beginTransaction();
-		messageRepository.delete(result.get(0));
-		messageRepository.delete(result.get(1));
+		messageRepository.remove(result.get(0));
+		messageRepository.remove(result.get(1));
 		messageRepository.commit();
 
 		// entityManager.getTransaction().rollback();

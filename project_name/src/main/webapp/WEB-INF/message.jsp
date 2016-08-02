@@ -61,11 +61,18 @@
 				</div>
 			</c:if>
 
+			<c:if test="${not empty danger}">
+				<div class="alert alert-danger">
+					<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+					<strong>Error!</strong> ${danger}
+				</div>
+			</c:if>
+
 			<c:if test="${not empty messages}">
 
 				<form action="message" method="post">
 					<div class="form-group">
-						<input class="hidden" name="action" id="action" value="posta">
+						<input class="hidden" name="action" id="action" value="post">
 						<input name="message" id="message" class="form-control"
 							placeholder="Add message"> <input type="submit"
 							class="btn btn-primary hidden" value="submit">
