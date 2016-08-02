@@ -65,8 +65,8 @@ public class TestMassage extends TestCase {
 
 		assertTrue(result != null);
 		assertTrue(result.size() == 2);
-		assertTrue(result.get(0).getMessage() == "Hello");
-		assertTrue(result.get(1).getMessage() == "World");
+		assertTrue(result.get(0).getContent() == "Hello");
+		assertTrue(result.get(1).getContent() == "World");
 
 		messageRepository.beginTransaction();
 		messageRepository.remove(result.get(0));

@@ -68,16 +68,16 @@
 				</div>
 			</c:if>
 
-			<c:if test="${not empty messages}">
+			<form action="message" method="post">
+				<div class="form-group">
+					<input class="hidden" name="action" id="action" value="post">
+					<input name="message" id="message" class="form-control"
+						placeholder="Add message"> <input type="submit"
+						class="btn btn-primary hidden" value="submit">
+				</div>
+			</form>
 
-				<form action="message" method="post">
-					<div class="form-group">
-						<input class="hidden" name="action" id="action" value="post">
-						<input name="message" id="message" class="form-control"
-							placeholder="Add message"> <input type="submit"
-							class="btn btn-primary hidden" value="submit">
-					</div>
-				</form>
+			<c:if test="${not empty messages}">
 
 				<div class="table-responsive">
 					<table class="table">

@@ -61,6 +61,14 @@ public class MessageServlet extends RepositoryServlet<MessageRepository>implemen
 		request.setAttribute("messages", messages);
 	}
 
+	public void filter(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String content = "Hello";
+		String id = "1";
+		List<Message> messages = getRespository().filterByContentAndId(content, id);
+		Collections.reverse(messages);
+		request.setAttribute("messages", messages);
+	}
+
 	public void post(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		getRespository().beginTransaction();
 		String message = request.getParameter("message");

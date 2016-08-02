@@ -64,6 +64,10 @@ public class GenericRepository<T extends EntityModel> {
 		return entityManager.createCriteria(entityClass);
 	}
 
+	public EntityFilter<T> createFilter() {
+		return new EntityFilter<T>(entityClass, entityManager);
+	}
+
 	public Transaction beginTransaction() {
 		return entityManager.beginTransaction();
 	}
@@ -98,9 +102,8 @@ public class GenericRepository<T extends EntityModel> {
 		return (T) entityManager.get(entityClass, id);
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<T> findAll() {
-		return createCriteria().list();
+		return createFilter().list();
 	}
 
 	public static <E extends EntityModel> GenericRepository<E> create(Class<E> entityClass, Session entityManager) {

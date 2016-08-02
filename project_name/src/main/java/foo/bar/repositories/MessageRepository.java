@@ -1,5 +1,7 @@
 package foo.bar.repositories;
 
+import java.util.List;
+
 import org.hibernate.Session;
 
 import core.GenericRepository;
@@ -15,6 +17,10 @@ public class MessageRepository extends GenericRepository<Message> {
 
 	public MessageRepository(Session session) {
 		super(session);
+	}
+
+	public List<Message> filterByContentAndId(String content, String id) {
+		return this.createFilter().like("content", content).like("id", id).list();
 	}
 
 }

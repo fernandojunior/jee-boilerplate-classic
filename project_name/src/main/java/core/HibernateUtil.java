@@ -1,8 +1,10 @@
 package core;
 
+import org.hibernate.QueryException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.type.Type;
 
 import foo.bar.entities.Message;
 
@@ -70,6 +72,39 @@ public class HibernateUtil {
 	@SuppressWarnings("deprecation")
 	public static ClassMetadata getEntityMetadata(Class<?> entityClass, SessionFactory entityManagerFactory) {
 		return entityManagerFactory.getClassMetadata(entityClass);
+	}
+
+	/**
+	 * Retorn the type of an entity property recursively
+	 *
+	 * @param entityClass
+	 *            Entity class
+	 * @param propertyName
+	 *            Property name (ie.: 'id', 'user.id', 'user.profile.id')
+	 * @return Property type
+	 */
+	public static Type getPropertyType(Class<?> entityClass, String propertyName, SessionFactory entityManagerFactory)
+			throws QueryException {
+		if (propertyName == null)
+			throw new QueryException("Property name passed cannot be null or empty");
+
+		// se for uma propriedade singular
+		if (!propertyName.contains(".")) {
+			return HibernateUtil.getEntityMetadata(entityClass, entityManagerFactory).getPropertyType(propertyName);
+		} // se não ...
+
+		// seta a propriedade principal (a primeira)
+		Type mainProperty = HibernateUtil.getEntityMetadata(entityClass, entityManagerFactory)
+				.getPropertyType(propertyName.split("\\.")[0]);
+
+		// se realmente for uma propriedade e se for um tipo de entidade
+		if (mainProperty.isEntityType()) {
+			String subProperties = propertyName.substring(propertyName.indexOf(".") + 1, propertyName.length());
+
+			// verifica se as subpropriedades sao validas pelo seu gerenciador
+			return getPropertyType(mainProperty.getReturnedClass(), subProperties, entityManagerFactory);
+		} else
+			throw new QueryException("Property type " + propertyName.split("\\.")[0] + " is not a entity.");
 	}
 
 }
