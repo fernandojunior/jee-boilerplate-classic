@@ -27,6 +27,8 @@ import core.EntityModel;
 	}
  * </code>
  * 
+ * Reference: http://docs.oracle.com/html/E13946_05/ejb3_langref.html
+ *
  * @author Fernando Felix do Nascimento Junior
  */
 public class QueryStringBuilder<E extends EntityModel> {
@@ -54,8 +56,8 @@ public class QueryStringBuilder<E extends EntityModel> {
 		return getEntityClass().getSimpleName();
 	}
 
-	private String adjustPropertyName(String propertyName) {
-		return getAlias() + "." + propertyName;
+	private String adjustPath(String path) {
+		return getAlias() + "." + path;
 	}
 
 	private String generateParameterName() {
@@ -74,13 +76,13 @@ public class QueryStringBuilder<E extends EntityModel> {
 		return parameterName;
 	}
 
-	private QueryStringBuilder<E> appendWhereClause(String clause) {
+	private QueryStringBuilder<E> addWhereClause(String clause) {
 		whereClauses.add(clause);
 		return this;
 	}
 
 	private QueryStringBuilder<E> and(String... clause) {
-		return appendWhereClause("AND " + String.join(" ", clause));
+		return addWhereClause("AND " + String.join(" ", clause));
 	}
 
 	private String findAllSelectFrom() {
@@ -107,32 +109,33 @@ public class QueryStringBuilder<E extends EntityModel> {
 
 	/**
 	 * @param path
-	 * 
+	 *            Path expression
+	 *
 	 * @param operator
 	 *            IS [NOT] NULL, IS [NOT] EMPTY
 	 * @return this
 	 */
 	public QueryStringBuilder<E> conditional(String path, String operator) {
-		path = adjustPropertyName(path);
+		path = adjustPath(path);
 		String parameterName = generateParameterName();
 		and(path, operator, parameterName);
 		return this;
 	}
 
-	public QueryStringBuilder<E> isNull(String propertyName) {
-		return conditional(propertyName, "IS NULL");
+	public QueryStringBuilder<E> isNull(String path) {
+		return conditional(path, "IS NULL");
 	}
 
-	public QueryStringBuilder<E> isNotNull(String propertyName) {
-		return conditional(propertyName, "IS NOT NULL");
+	public QueryStringBuilder<E> isNotNull(String path) {
+		return conditional(path, "IS NOT NULL");
 	}
 
-	public QueryStringBuilder<E> isEmpty(String propertyName) {
-		return conditional(propertyName, "IS EMPTY");
+	public QueryStringBuilder<E> isEmpty(String path) {
+		return conditional(path, "IS EMPTY");
 	}
 
-	public QueryStringBuilder<E> isNotEmpty(String propertyName) {
-		return conditional(propertyName, "IS NOT EMPTY");
+	public QueryStringBuilder<E> isNotEmpty(String path) {
+		return conditional(path, "IS NOT EMPTY");
 	}
 
 	/**
@@ -145,58 +148,58 @@ public class QueryStringBuilder<E extends EntityModel> {
 	 * @return this
 	 */
 	public QueryStringBuilder<E> conditional(String path, String operator, Object value) {
-		path = adjustPropertyName(path);
+		path = adjustPath(path);
 		String parameterName = generateParameterName();
 		and(path, operator, parameterName);
 		addParameter(parameterName, value);
 		return this;
 	}
 
-	public QueryStringBuilder<E> eq(String propertyName, Object value) {
-		return conditional(propertyName, "=", value);
+	public QueryStringBuilder<E> eq(String path, Object value) {
+		return conditional(path, "=", value);
 	}
 
-	public QueryStringBuilder<E> gt(String propertyName, Object value) {
-		return conditional(propertyName, ">", value);
+	public QueryStringBuilder<E> gt(String path, Object value) {
+		return conditional(path, ">", value);
 	}
 
-	public QueryStringBuilder<E> ge(String propertyName, Object value) {
-		return conditional(propertyName, ">=", value);
+	public QueryStringBuilder<E> ge(String path, Object value) {
+		return conditional(path, ">=", value);
 	}
 
-	public QueryStringBuilder<E> lt(String propertyName, Object value) {
-		return conditional(propertyName, "<", value);
+	public QueryStringBuilder<E> lt(String path, Object value) {
+		return conditional(path, "<", value);
 	}
 
-	public QueryStringBuilder<E> le(String propertyName, Object value) {
-		return conditional(propertyName, "<=", value);
+	public QueryStringBuilder<E> le(String path, Object value) {
+		return conditional(path, "<=", value);
 	}
 
-	public QueryStringBuilder<E> ne(String propertyName, Object value) {
-		return conditional(propertyName, "<>", value);
+	public QueryStringBuilder<E> ne(String path, Object value) {
+		return conditional(path, "<>", value);
 	}
 
-	public QueryStringBuilder<E> like(String propertyName, Object value) {
-		return conditional(propertyName, "LIKE", value);
+	public QueryStringBuilder<E> like(String path, Object value) {
+		return conditional(path, "LIKE", value);
 	}
 
-	public QueryStringBuilder<E> notLike(String propertyName, Object value) {
-		return conditional(propertyName, "NOT LIKE", value);
+	public QueryStringBuilder<E> notLike(String path, Object value) {
+		return conditional(path, "NOT LIKE", value);
 	}
 
-	public QueryStringBuilder<E> in(String propertyName, Object value) {
-		return conditional(propertyName, "IN", value);
+	public QueryStringBuilder<E> in(String path, Object value) {
+		return conditional(path, "IN", value);
 	}
 
-	public QueryStringBuilder<E> notIn(String propertyName, Object value) {
-		return conditional(propertyName, "NOT IN", value);
+	public QueryStringBuilder<E> notIn(String path, Object value) {
+		return conditional(path, "NOT IN", value);
 	}
 
-	public QueryStringBuilder<E> between(String propertyName, Object startValue, Object endValue) {
-		propertyName = adjustPropertyName(propertyName);
+	public QueryStringBuilder<E> between(String path, Object startValue, Object endValue) {
+		path = adjustPath(path);
 		String startParameterName = generateParameterName();
 		String endParamterName = generateParameterName();
-		and(propertyName, "BETWEEN", startParameterName, "AND", endParamterName);
+		and(path, "BETWEEN", startParameterName, "AND", endParamterName);
 		addParameter(startParameterName, startValue);
 		addParameter(endParamterName, endValue);
 		return this;
@@ -212,7 +215,7 @@ public class QueryStringBuilder<E extends EntityModel> {
 	 * @return this
 	 */
 	public QueryStringBuilder<E> addJoin(String spec, String path) {
-		path = adjustPropertyName(path);
+		path = adjustPath(path);
 		List<String> identifiers = Arrays.asList("LEFT", "OUTER", "INNER", "JOIN", "FETCH");
 		String[] specArray = spec.trim().replaceAll("\\s+", " ").split(" ");
 
@@ -224,19 +227,19 @@ public class QueryStringBuilder<E extends EntityModel> {
 		return this;
 	}
 
-	public QueryStringBuilder<E> addOrder(String propertyName, String orderDirection) throws PersistenceException {
+	public QueryStringBuilder<E> addOrder(String path, String orderDirection) throws PersistenceException {
 		if (!Arrays.asList("ASC", "DESC").contains(orderDirection))
 			throw new PersistenceException("Invalid order direction " + orderDirection);
-		orderByClauses.add(adjustPropertyName(propertyName) + " " + orderDirection);
+		orderByClauses.add(adjustPath(path) + " " + orderDirection);
 		return this;
 	}
 
-	public QueryStringBuilder<E> ascOrder(String propertyName) throws PersistenceException {
-		return addOrder(propertyName, "ASC");
+	public QueryStringBuilder<E> ascOrder(String path) throws PersistenceException {
+		return addOrder(path, "ASC");
 	}
 
-	public QueryStringBuilder<E> descOrder(String propertyName) throws PersistenceException {
-		return addOrder(propertyName, "DESC");
+	public QueryStringBuilder<E> descOrder(String path) throws PersistenceException {
+		return addOrder(path, "DESC");
 	}
 
 	public String build() {
