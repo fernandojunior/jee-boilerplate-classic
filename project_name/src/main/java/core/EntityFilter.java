@@ -93,16 +93,16 @@ public class EntityFilter<E extends EntityModel> {
 		return add(Restrictions.like(propertyName, parseValue(propertyName, value)));
 	}
 
-	public EntityFilter<E> between(String propertyName, Object loValue, Object hiValue) throws QueryException {
-		loValue = parseValue(propertyName, loValue);
-		hiValue = parseValue(propertyName, hiValue);
+	public EntityFilter<E> between(String propertyName, Object lowValue, Object highValue) throws QueryException {
+		lowValue = parseValue(propertyName, lowValue);
+		highValue = parseValue(propertyName, highValue);
 
 		if (getPropertyType(propertyName).getReturnedClass().equals(Date.class)) {
-			loValue = DateUtil.lowDateTime((Date) loValue);
-			hiValue = DateUtil.highDateTime((Date) hiValue);
+			lowValue = DateUtil.lowDateTime((Date) lowValue);
+			highValue = DateUtil.highDateTime((Date) highValue);
 		}
 
-		return add(Restrictions.between(propertyName, loValue, hiValue));
+		return add(Restrictions.between(propertyName, lowValue, highValue));
 	}
 
 	public EntityFilter<E> lt(String propertyName, Object value) throws QueryException {
