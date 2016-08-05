@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.Random;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
@@ -16,28 +15,34 @@ import javax.persistence.Query;
 import core.EntityModel;
 
 /**
- * <code>
- 	public static void main(String[] args) {
-		QueryStringBuilder<Message> queryBuilder = new QueryStringBuilder<Message>(Message.class);
-		queryBuilder.like("id", 1).gt("profile.id", 2);
-		queryBuilder.between("id", 1, 10).descOrder("id");
-		queryBuilder.asCount(true);
-		queryBuilder.addJoin("LEFT JOIN", "profile");
-		System.out.println(queryBuilder.build());
-	}
- * </code>
- * 
+ * A simple select statement builder.
+ *
  * Reference: http://docs.oracle.com/html/E13946_05/ejb3_langref.html
+ *
+ * <code>
+ 	QueryStringBuilder<User> builder = new QueryStringBuilder<User>(User.class);
+	builder.aggregate("count").distinct(true).select("id", "name");
+	builder.addJoin("LEFT JOIN", "profile");
+	builder.like("id", 1).gt("profile.id", 2).between("id", 1, 10);
+	builder.descOrder("id");
+	System.out.println(builder.build());
+	// SELECT COUNT(DISTINCT user.id, user.name)
+	// FROM User AS user LEFT JOIN user.profile
+	// WHERE 1 = 1 AND user.id LIKE :P0_ AND user.profile.id > :P1_ AND user.id BETWEEN :P2_ AND :P3_
+	// ORDER BY user.id DESC
+ * </code>
  *
  * @author Fernando Felix do Nascimento Junior
  */
 public class QueryStringBuilder<E extends EntityModel> {
 
+	private boolean distinct = false;
 	private Class<E> entityClass;
-	private boolean count = false;
-	private Set<String> joinClauses = new LinkedHashSet<String>();
-	private Set<String> whereClauses = new LinkedHashSet<String>();
-	private Set<String> orderByClauses = new LinkedHashSet<String>();
+	private String aggragate;
+	private Set<String> selects = new LinkedHashSet<String>();
+	private Set<String> join = new LinkedHashSet<String>();
+	private Set<String> where = new LinkedHashSet<String>();
+	private Set<String> orderBy = new LinkedHashSet<String>();
 	private Map<String, Object> parameters = new HashMap<String, Object>();
 
 	public QueryStringBuilder(Class<E> entityClass) {
@@ -56,70 +61,98 @@ public class QueryStringBuilder<E extends EntityModel> {
 		return getEntityClass().getSimpleName();
 	}
 
+	private String addParameter(Object value) {
+		String parameterName = nextParameterName();
+		parameters.put(nextParameterName(), value);
+		return parameterName;
+	}
+
+	private String nextParameterName() {
+		return ":P" + parameters.size() + "_";
+	}
+
 	private String adjustPath(String path) {
 		return getAlias() + "." + path;
 	}
 
-	private String generateParameterName() {
-		String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		int length = 3;
-		Random rand = new java.util.Random();
-
-		String parameterName = ":";
-		for (int i = 0; i < length; i++)
-			parameterName += lexicon.charAt(rand.nextInt(lexicon.length()));
-		parameterName += "_";
-
-		if (parameters.keySet().contains(parameterName))
-			return generateParameterName();
-
-		return parameterName;
-	}
-
-	private QueryStringBuilder<E> addWhereClause(String clause) {
-		whereClauses.add(clause);
-		return this;
-	}
-
 	private QueryStringBuilder<E> and(String... clause) {
-		return addWhereClause("AND " + String.join(" ", clause));
-	}
-
-	private String findAllSelectFrom() {
-		return "SELECT DISTINCT " + getAlias() + " FROM " + getEntityName() + " " + getAlias();
-	}
-
-	private String countAllSelectFrom() {
-		return "SELECT count(DISTINCT " + getAlias() + ") FROM " + getEntityName() + " " + getAlias();
-	}
-
-	public QueryStringBuilder<E> addParameter(String name, Object value) {
-		parameters.put(name, value);
-		return this;
-	}
-
-	public Map<String, Object> getParameters() {
-		return parameters;
-	}
-
-	public QueryStringBuilder<E> asCount(boolean count) {
-		this.count = count;
+		where.add("AND " + String.join(" ", clause));
 		return this;
 	}
 
 	/**
+	 * Add a path or more in select clause.
+	 *
+	 * @param paths
+	 *            A path expression or more
+	 *
+	 * @return this
+	 */
+	public QueryStringBuilder<E> select(String... paths) {
+		for (String path : paths)
+			selects.add(adjustPath(path));
+		return this;
+	}
+
+	/**
+	 * Indicate if DISTINCT keyword must be specified or not in select clause.
+	 *
+	 * {@link QueryStringBuilder#select(String...)}
+	 *
+	 * @param distinct
+	 *            true to specify, false otherwise
+	 * @return this
+	 */
+	public QueryStringBuilder<E> distinct(boolean distinct) {
+		this.distinct = distinct;
+		return this;
+	}
+
+	/**
+	 * Apply an aggregate function on the selected paths.
+	 *
+	 * Reference: 10.2.7.4. JPQL Aggregate Functions
+	 *
+	 * {@link QueryStringBuilder#select(String...)}
+	 * {@link QueryStringBuilder#disaggregate()}
+	 *
+	 * @param function
+	 *            "AVG" || "MAX" || "MIN" || "SUM" || "COUNT" | null
+	 * @return this
+	 */
+	public QueryStringBuilder<E> aggregate(String function) {
+		if (function == null)
+			return this;
+		function = function.toUpperCase();
+		if (!Arrays.asList("AVG", "MAX", "MIN", "SUM", "COUNT").contains(function))
+			throw new PersistenceException("Invalid aggregate function " + function + ".");
+		this.aggragate = function;
+		return this;
+	}
+
+	/**
+	 * Remove the aggregate function from select clause
+	 *
+	 * {@link QueryStringBuilder#aggragate()}
+	 *
+	 * @return this
+	 */
+	public QueryStringBuilder<E> disaggregate() {
+		this.aggragate = null;
+		return this;
+	}
+
+	/**
+	 * 10.2.5.5. JPQL Conditional Expression Composition
+	 *
 	 * @param path
 	 *            Path expression
-	 *
 	 * @param operator
 	 *            IS [NOT] NULL, IS [NOT] EMPTY
 	 * @return this
 	 */
 	public QueryStringBuilder<E> conditional(String path, String operator) {
-		path = adjustPath(path);
-		String parameterName = generateParameterName();
-		and(path, operator, parameterName);
-		return this;
+		return and(adjustPath(path), operator, nextParameterName());
 	}
 
 	public QueryStringBuilder<E> isNull(String path) {
@@ -138,7 +171,13 @@ public class QueryStringBuilder<E extends EntityModel> {
 		return conditional(path, "IS NOT EMPTY");
 	}
 
+	public Map<String, Object> getParameters() {
+		return parameters;
+	}
+
 	/**
+	 * 10.2.5.5. JPQL Conditional Expression Composition
+	 *
 	 * @param path
 	 *            Path expression
 	 * @param operator
@@ -148,11 +187,7 @@ public class QueryStringBuilder<E extends EntityModel> {
 	 * @return this
 	 */
 	public QueryStringBuilder<E> conditional(String path, String operator, Object value) {
-		path = adjustPath(path);
-		String parameterName = generateParameterName();
-		and(path, operator, parameterName);
-		addParameter(parameterName, value);
-		return this;
+		return and(adjustPath(path), operator, addParameter(value));
 	}
 
 	public QueryStringBuilder<E> eq(String path, Object value) {
@@ -196,41 +231,35 @@ public class QueryStringBuilder<E extends EntityModel> {
 	}
 
 	public QueryStringBuilder<E> between(String path, Object startValue, Object endValue) {
-		path = adjustPath(path);
-		String startParameterName = generateParameterName();
-		String endParamterName = generateParameterName();
-		and(path, "BETWEEN", startParameterName, "AND", endParamterName);
-		addParameter(startParameterName, startValue);
-		addParameter(endParamterName, endValue);
-		return this;
+		return and(adjustPath(path), "BETWEEN", addParameter(startValue), "AND", addParameter(endValue));
 	}
 
 	/**
-	 * Example: this.addJoin("JOIN FETCH", "pub.magazines", "mag")
-	 * 
+	 * Reference 10.2.3.5. JPQL Joins
+	 *
 	 * @param spec
-	 *            Join spec: [LEFT [OUTER] | INNER] JOIN [FETCH]
+	 *            [LEFT [OUTER] | INNER] JOIN [FETCH]
 	 * @param path
 	 *            Join association path expression
 	 * @return this
 	 */
 	public QueryStringBuilder<E> addJoin(String spec, String path) {
 		path = adjustPath(path);
-		List<String> identifiers = Arrays.asList("LEFT", "OUTER", "INNER", "JOIN", "FETCH");
-		String[] specArray = spec.trim().replaceAll("\\s+", " ").split(" ");
+		List<String> keywords = Arrays.asList("LEFT", "OUTER", "INNER", "JOIN", "FETCH");
+		String[] specPartials = spec.trim().replaceAll("\\s+", " ").split(" ");
 
-		for (String s : specArray)
-			if (!identifiers.contains(s.toUpperCase()))
-				throw new PersistenceException("Join spec " + s + " is not valid.");
+		for (String specPartial : specPartials)
+			if (!keywords.contains(specPartial.toUpperCase()))
+				throw new PersistenceException("Join spec " + specPartial + " is not valid.");
 
-		joinClauses.add(String.join(" ", spec, path));
+		join.add(String.join(" ", spec, path));
 		return this;
 	}
 
 	public QueryStringBuilder<E> addOrder(String path, String orderDirection) throws PersistenceException {
 		if (!Arrays.asList("ASC", "DESC").contains(orderDirection))
 			throw new PersistenceException("Invalid order direction " + orderDirection);
-		orderByClauses.add(adjustPath(path) + " " + orderDirection);
+		orderBy.add(adjustPath(path) + " " + orderDirection);
 		return this;
 	}
 
@@ -242,32 +271,52 @@ public class QueryStringBuilder<E extends EntityModel> {
 		return addOrder(path, "DESC");
 	}
 
+	/**
+	 * 10.2.1.1. JPQL Select Statement
+	 *
+	 * @return selectClause fromClause [whereClause] [groupby_clause]
+	 *         [orderbyClause]
+	 */
 	public String build() {
-		return String.join(" ", buildSelectFrom(), buildJoinClauses(), buildWhereClauses(), buildOrderByClauses());
+		return String.join("\n", buildSelectClause(), buildFromClause(), buildWhereClause(), buildOrderByClause());
 	}
 
-	private String buildSelectFrom() {
-		if (count)
-			return countAllSelectFrom();
-		return findAllSelectFrom();
+	/**
+	 * Reference 10.2.7. JPQL SELECT Clause
+	 *
+	 * {@link QueryStringBuilder#aggregate(String)}
+	 * {@link QueryStringBuilder#distinct(boolean)}
+	 * {@link QueryStringBuilder#select(String...)}
+	 *
+	 * @return SELECT [AGGREGATE]([DISTINCT] alias | selects)
+	 */
+	private String buildSelectClause() {
+		String aggragate = this.aggragate != null ? this.aggragate : "";
+		String distinct = this.distinct ? "DISTINCT" : "";
+		String selects = this.selects.isEmpty() ? getAlias() : String.join(", ", this.selects);
+		return String.format("SELECT %s(%s %s)", aggragate, distinct, selects);
 	}
 
-	private String buildJoinClauses() {
-		if (joinClauses.size() == 0)
+	private String buildFromClause() {
+		return String.join(" ", "FROM", getEntityName(), "AS", getAlias(), buildJoinClause());
+	}
+
+	private String buildJoinClause() {
+		if (join.size() == 0)
 			return "";
-		return " " + String.join(", ", joinClauses);
+		return String.join(", ", join);
 	}
 
-	private String buildWhereClauses() {
-		if (whereClauses.size() == 0)
+	private String buildWhereClause() {
+		if (where.size() == 0)
 			return "";
-		return "WHERE 1 = 1 " + String.join(" ", whereClauses);
+		return "WHERE 1 = 1 " + String.join(" ", where);
 	}
 
-	private String buildOrderByClauses() {
-		if (orderByClauses.size() == 0)
+	private String buildOrderByClause() {
+		if (orderBy.size() == 0)
 			return "";
-		return "ORDER BY " + String.join(", ", orderByClauses);
+		return "ORDER BY " + String.join(", ", orderBy);
 	}
 
 	public String toString() {
