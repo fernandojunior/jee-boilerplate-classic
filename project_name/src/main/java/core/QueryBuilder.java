@@ -15,13 +15,18 @@ import javax.persistence.Query;
 import core.EntityModel;
 
 /**
- * A simple select statement builder.
+ * A simple query (select statement) builder.
  *
  * Reference: http://docs.oracle.com/html/E13946_05/ejb3_langref.html
+ * 
+ * {@link org.hibernate.jpa.internal.EntityManagerImpl#createQuery(String)}
+ * {@link org.hibernate.internal.AbstractSessionImpl#createQuery(String)}
+ * {@link org.hibernate.jpa.internal.QueryImpl}
+ * {@link org.hibernate.jpa.spi.AbstractQueryImpl}
  *
  * <code>
- 	QueryStringBuilder<User> builder = new QueryStringBuilder<User>(User.class);
-	builder.aggregate("count").distinct(true).select("id", "name");
+ 	QueryBuilder<User> builder = new QueryBuilder<User>(User.class);
+	builder.select("id", "name").aggregate("count").distinct(true);
 	builder.addJoin("LEFT JOIN", "profile");
 	builder.like("id", 1).gt("profile.id", 2).between("id", 1, 10);
 	builder.descOrder("id");
@@ -34,7 +39,7 @@ import core.EntityModel;
  *
  * @author Fernando Felix do Nascimento Junior
  */
-public class QueryStringBuilder<E extends EntityModel> {
+public class QueryBuilder<E extends EntityModel> {
 
 	private boolean distinct = false;
 	private Class<E> entityClass;
@@ -45,7 +50,7 @@ public class QueryStringBuilder<E extends EntityModel> {
 	private Set<String> orderBy = new LinkedHashSet<String>();
 	private Map<String, Object> parameters = new HashMap<String, Object>();
 
-	public QueryStringBuilder(Class<E> entityClass) {
+	public QueryBuilder(Class<E> entityClass) {
 		this.entityClass = entityClass;
 	}
 
@@ -75,7 +80,7 @@ public class QueryStringBuilder<E extends EntityModel> {
 		return getAlias() + "." + path;
 	}
 
-	private QueryStringBuilder<E> and(String... clause) {
+	private QueryBuilder<E> and(String... clause) {
 		where.add("AND " + String.join(" ", clause));
 		return this;
 	}
@@ -88,7 +93,7 @@ public class QueryStringBuilder<E extends EntityModel> {
 	 *
 	 * @return this
 	 */
-	public QueryStringBuilder<E> select(String... paths) {
+	public QueryBuilder<E> select(String... paths) {
 		for (String path : paths)
 			selects.add(adjustPath(path));
 		return this;
@@ -97,13 +102,13 @@ public class QueryStringBuilder<E extends EntityModel> {
 	/**
 	 * Indicate if DISTINCT keyword must be specified or not in select clause.
 	 *
-	 * {@link QueryStringBuilder#select(String...)}
+	 * {@link QueryBuilder#select(String...)}
 	 *
 	 * @param distinct
 	 *            true to specify, false otherwise
 	 * @return this
 	 */
-	public QueryStringBuilder<E> distinct(boolean distinct) {
+	public QueryBuilder<E> distinct(boolean distinct) {
 		this.distinct = distinct;
 		return this;
 	}
@@ -113,14 +118,14 @@ public class QueryStringBuilder<E extends EntityModel> {
 	 *
 	 * Reference: 10.2.7.4. JPQL Aggregate Functions
 	 *
-	 * {@link QueryStringBuilder#select(String...)}
-	 * {@link QueryStringBuilder#disaggregate()}
+	 * {@link QueryBuilder#select(String...)}
+	 * {@link QueryBuilder#disaggregate()}
 	 *
 	 * @param function
 	 *            "AVG" || "MAX" || "MIN" || "SUM" || "COUNT" | null
 	 * @return this
 	 */
-	public QueryStringBuilder<E> aggregate(String function) {
+	public QueryBuilder<E> aggregate(String function) {
 		if (function == null)
 			return this;
 		function = function.toUpperCase();
@@ -133,11 +138,11 @@ public class QueryStringBuilder<E extends EntityModel> {
 	/**
 	 * Remove the aggregate function from select clause
 	 *
-	 * {@link QueryStringBuilder#aggragate()}
+	 * {@link QueryBuilder#aggragate()}
 	 *
 	 * @return this
 	 */
-	public QueryStringBuilder<E> disaggregate() {
+	public QueryBuilder<E> disaggregate() {
 		this.aggragate = null;
 		return this;
 	}
@@ -151,28 +156,33 @@ public class QueryStringBuilder<E extends EntityModel> {
 	 *            IS [NOT] NULL, IS [NOT] EMPTY
 	 * @return this
 	 */
-	public QueryStringBuilder<E> conditional(String path, String operator) {
+	public QueryBuilder<E> conditional(String path, String operator) {
 		return and(adjustPath(path), operator, nextParameterName());
 	}
 
-	public QueryStringBuilder<E> isNull(String path) {
+	public QueryBuilder<E> isNull(String path) {
 		return conditional(path, "IS NULL");
 	}
 
-	public QueryStringBuilder<E> isNotNull(String path) {
+	public QueryBuilder<E> isNotNull(String path) {
 		return conditional(path, "IS NOT NULL");
 	}
 
-	public QueryStringBuilder<E> isEmpty(String path) {
+	public QueryBuilder<E> isEmpty(String path) {
 		return conditional(path, "IS EMPTY");
 	}
 
-	public QueryStringBuilder<E> isNotEmpty(String path) {
+	public QueryBuilder<E> isNotEmpty(String path) {
 		return conditional(path, "IS NOT EMPTY");
 	}
 
+	/**
+	 * Return a shallow copy of the named parameter value map of the query.
+	 * 
+	 * @return Shallow copy of the named parameter value map of the query.
+	 */
 	public Map<String, Object> getParameters() {
-		return parameters;
+		return new HashMap<String, Object>(parameters);
 	}
 
 	/**
@@ -186,51 +196,51 @@ public class QueryStringBuilder<E extends EntityModel> {
 	 *            Path expression value
 	 * @return this
 	 */
-	public QueryStringBuilder<E> conditional(String path, String operator, Object value) {
+	public QueryBuilder<E> conditional(String path, String operator, Object value) {
 		return and(adjustPath(path), operator, addParameter(value));
 	}
 
-	public QueryStringBuilder<E> eq(String path, Object value) {
+	public QueryBuilder<E> eq(String path, Object value) {
 		return conditional(path, "=", value);
 	}
 
-	public QueryStringBuilder<E> gt(String path, Object value) {
+	public QueryBuilder<E> gt(String path, Object value) {
 		return conditional(path, ">", value);
 	}
 
-	public QueryStringBuilder<E> ge(String path, Object value) {
+	public QueryBuilder<E> ge(String path, Object value) {
 		return conditional(path, ">=", value);
 	}
 
-	public QueryStringBuilder<E> lt(String path, Object value) {
+	public QueryBuilder<E> lt(String path, Object value) {
 		return conditional(path, "<", value);
 	}
 
-	public QueryStringBuilder<E> le(String path, Object value) {
+	public QueryBuilder<E> le(String path, Object value) {
 		return conditional(path, "<=", value);
 	}
 
-	public QueryStringBuilder<E> ne(String path, Object value) {
+	public QueryBuilder<E> ne(String path, Object value) {
 		return conditional(path, "<>", value);
 	}
 
-	public QueryStringBuilder<E> like(String path, Object value) {
+	public QueryBuilder<E> like(String path, Object value) {
 		return conditional(path, "LIKE", value);
 	}
 
-	public QueryStringBuilder<E> notLike(String path, Object value) {
+	public QueryBuilder<E> notLike(String path, Object value) {
 		return conditional(path, "NOT LIKE", value);
 	}
 
-	public QueryStringBuilder<E> in(String path, Object value) {
+	public QueryBuilder<E> in(String path, Object value) {
 		return conditional(path, "IN", value);
 	}
 
-	public QueryStringBuilder<E> notIn(String path, Object value) {
+	public QueryBuilder<E> notIn(String path, Object value) {
 		return conditional(path, "NOT IN", value);
 	}
 
-	public QueryStringBuilder<E> between(String path, Object startValue, Object endValue) {
+	public QueryBuilder<E> between(String path, Object startValue, Object endValue) {
 		return and(adjustPath(path), "BETWEEN", addParameter(startValue), "AND", addParameter(endValue));
 	}
 
@@ -243,7 +253,7 @@ public class QueryStringBuilder<E extends EntityModel> {
 	 *            Join association path expression
 	 * @return this
 	 */
-	public QueryStringBuilder<E> addJoin(String spec, String path) {
+	public QueryBuilder<E> addJoin(String spec, String path) {
 		path = adjustPath(path);
 		List<String> keywords = Arrays.asList("LEFT", "OUTER", "INNER", "JOIN", "FETCH");
 		String[] specPartials = spec.trim().replaceAll("\\s+", " ").split(" ");
@@ -256,18 +266,18 @@ public class QueryStringBuilder<E extends EntityModel> {
 		return this;
 	}
 
-	public QueryStringBuilder<E> addOrder(String path, String orderDirection) throws PersistenceException {
+	public QueryBuilder<E> addOrder(String path, String orderDirection) throws PersistenceException {
 		if (!Arrays.asList("ASC", "DESC").contains(orderDirection))
 			throw new PersistenceException("Invalid order direction " + orderDirection);
 		orderBy.add(adjustPath(path) + " " + orderDirection);
 		return this;
 	}
 
-	public QueryStringBuilder<E> ascOrder(String path) throws PersistenceException {
+	public QueryBuilder<E> ascOrder(String path) throws PersistenceException {
 		return addOrder(path, "ASC");
 	}
 
-	public QueryStringBuilder<E> descOrder(String path) throws PersistenceException {
+	public QueryBuilder<E> descOrder(String path) throws PersistenceException {
 		return addOrder(path, "DESC");
 	}
 
@@ -282,11 +292,25 @@ public class QueryStringBuilder<E extends EntityModel> {
 	}
 
 	/**
+	 * Build a Query from a given entityManager based on this queryBuilder.
+	 * 
+	 * @param entityManager
+	 *            An Entity Manager
+	 * @return A Query
+	 */
+	public Query build(EntityManager entityManager) {
+		Query query = entityManager.createQuery(this.build());
+		for (Entry<String, Object> entry : this.getParameters().entrySet())
+			query.setParameter(entry.getKey(), entry.getValue());
+		return query;
+	}
+
+	/**
 	 * Reference 10.2.7. JPQL SELECT Clause
 	 *
-	 * {@link QueryStringBuilder#aggregate(String)}
-	 * {@link QueryStringBuilder#distinct(boolean)}
-	 * {@link QueryStringBuilder#select(String...)}
+	 * {@link QueryBuilder#aggregate(String)}
+	 * {@link QueryBuilder#distinct(boolean)}
+	 * {@link QueryBuilder#select(String...)}
 	 *
 	 * @return SELECT [AGGREGATE]([DISTINCT] alias | selects)
 	 */
@@ -321,13 +345,6 @@ public class QueryStringBuilder<E extends EntityModel> {
 
 	public String toString() {
 		return build();
-	}
-
-	public Query createQuery(EntityManager entityManager) {
-		Query query = entityManager.createQuery(this.build());
-		for (Entry<String, Object> entry : this.getParameters().entrySet())
-			query.setParameter(entry.getKey(), entry.getValue());
-		return query;
 	}
 
 }
