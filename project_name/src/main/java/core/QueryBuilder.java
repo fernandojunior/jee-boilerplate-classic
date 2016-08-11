@@ -269,19 +269,19 @@ public class QueryBuilder<E extends EntityModel> {
 		return this;
 	}
 
-	public QueryBuilder<E> addOrder(String path, String orderDirection) throws PersistenceException {
+	public QueryBuilder<E> orderBy(String path, String orderDirection) throws PersistenceException {
 		if (!Arrays.asList("ASC", "DESC").contains(orderDirection))
 			throw new PersistenceException("Invalid order direction " + orderDirection);
 		orderBy.add(adjustPath(path) + " " + orderDirection);
 		return this;
 	}
 
-	public QueryBuilder<E> ascOrder(String path) throws PersistenceException {
-		return addOrder(path, "ASC");
+	public QueryBuilder<E> asc(String path) throws PersistenceException {
+		return orderBy(path, "ASC");
 	}
 
-	public QueryBuilder<E> descOrder(String path) throws PersistenceException {
-		return addOrder(path, "DESC");
+	public QueryBuilder<E> desc(String path) throws PersistenceException {
+		return orderBy(path, "DESC");
 	}
 
 	/**
