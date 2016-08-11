@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
@@ -26,16 +27,17 @@ import core.EntityModel;
  * {@link org.hibernate.jpa.spi.AbstractQueryImpl}
  *
  * <code>
- 	QueryBuilder<User> builder = new QueryBuilder<User>(User.class);
-	builder.select("id", "name").aggregate("count").distinct(true);
-	builder.addJoin("LEFT JOIN", "profile");
-	builder.like("id", 1).gt("profile.id", 2).between("id", 1, 10);
-	builder.descOrder("id");
-	System.out.println(builder.build());
-	// SELECT COUNT(DISTINCT user.id, user.name)
-	// FROM User AS user LEFT JOIN user.profile
-	// WHERE 1 = 1 AND user.id LIKE :P0_ AND user.profile.id > :P1_ AND user.id BETWEEN :P2_ AND :P3_
-	// ORDER BY user.id DESC
+ 	public static void main(String[] args) {
+		QueryBuilder<User> builder = new QueryBuilder<User>(User.class, entityManager);
+		builder.select("id", "name").agg("count").distinct(true).join("LEFT JOIN", "profile").like("id", 1)
+				.gt("profile.id", 2).between("id", 1, 10).desc("id");
+		TypedQuery<User> query = builder.build();
+		System.out.println(builder.statement());
+		// SELECT COUNT(DISTINCT a_885.id, a_885.name)
+		// FROM Message AS a_885 LEFT JOIN a_885.profile
+		// WHERE 1 = 1 AND a_885.id LIKE :a_885_p_0 AND a_885.profile.id > :a_885_p_1 AND a_885.id BETWEEN :a_885_p_2 AND :a_885_p_3
+		// ORDER BY a_885.id DESC
+	}
  * </code>
  *
  * @author Fernando Felix do Nascimento Junior
@@ -44,7 +46,8 @@ public class QueryBuilder<E extends EntityModel> {
 
 	private boolean distinct = false;
 	private Class<E> entityClass;
-	private String aggragate;
+	private String agg;
+	private String alias;
 	private EntityManager entityManager;
 	private Set<String> selects = new LinkedHashSet<String>();
 	private Set<String> join = new LinkedHashSet<String>();
@@ -55,14 +58,20 @@ public class QueryBuilder<E extends EntityModel> {
 	public QueryBuilder(Class<E> entityClass, EntityManager entityManager) {
 		this.entityClass = entityClass;
 		this.entityManager = entityManager;
+		this.alias = randomAlias();
 	}
 
 	private Class<E> getEntityClass() {
 		return entityClass;
 	}
 
+	private String randomAlias() {
+		Random random = new Random();
+		return "a_" + random.nextInt(10) + "" + random.nextInt(10) + "" + random.nextInt(10);
+	}
+
 	private String getAlias() {
-		return getEntityName().toLowerCase();
+		return alias;
 	}
 
 	private String getEntityName() {
@@ -76,7 +85,7 @@ public class QueryBuilder<E extends EntityModel> {
 	}
 
 	private String nextParameterName() {
-		return ":P" + parameters.size() + "_";
+		return ":" + getAlias() + "_" + "p_" + parameters.size();
 	}
 
 	private String adjustPath(String path) {
@@ -121,32 +130,31 @@ public class QueryBuilder<E extends EntityModel> {
 	 *
 	 * Reference: 10.2.7.4. JPQL Aggregate Functions
 	 *
-	 * {@link QueryBuilder#select(String...)}
-	 * {@link QueryBuilder#disaggregate()}
+	 * {@link QueryBuilder#select(String...)} {@link QueryBuilder#unagg()}
 	 *
 	 * @param function
 	 *            "AVG" || "MAX" || "MIN" || "SUM" || "COUNT" | null
 	 * @return this
 	 */
-	public QueryBuilder<E> aggregate(String function) {
+	public QueryBuilder<E> agg(String function) {
 		if (function == null)
 			return this;
 		function = function.toUpperCase();
 		if (!Arrays.asList("AVG", "MAX", "MIN", "SUM", "COUNT").contains(function))
 			throw new PersistenceException("Invalid aggregate function " + function + ".");
-		this.aggragate = function;
+		this.agg = function;
 		return this;
 	}
 
 	/**
 	 * Remove the aggregate function from select clause
 	 *
-	 * {@link QueryBuilder#aggragate()}
+	 * {@link QueryBuilder#agg()}
 	 *
 	 * @return this
 	 */
-	public QueryBuilder<E> disaggregate() {
-		this.aggragate = null;
+	public QueryBuilder<E> unagg() {
+		this.agg = null;
 		return this;
 	}
 
@@ -247,6 +255,14 @@ public class QueryBuilder<E extends EntityModel> {
 		return and(adjustPath(path), "BETWEEN", addParameter(startValue), "AND", addParameter(endValue));
 	}
 
+	public QueryBuilder<E> exists(QueryBuilder<?> queryBuilder) {
+		if (this == queryBuilder || this.getAlias().equals(queryBuilder.getAlias()))
+			throw new PersistenceException("QueryBuilder parameter " + getAlias() + " can't be itself.");
+		and("EXISTS", ("(" + queryBuilder + ")").replaceAll("\n", " "));
+		parameters.putAll(queryBuilder.getParameters());
+		return this;
+	}
+
 	/**
 	 * Reference 10.2.3.5. JPQL Joins
 	 *
@@ -297,14 +313,13 @@ public class QueryBuilder<E extends EntityModel> {
 	/**
 	 * Reference 10.2.7. JPQL SELECT Clause
 	 *
-	 * {@link QueryBuilder#aggregate(String)}
-	 * {@link QueryBuilder#distinct(boolean)}
+	 * {@link QueryBuilder#agg(String)} {@link QueryBuilder#distinct(boolean)}
 	 * {@link QueryBuilder#select(String...)}
 	 *
 	 * @return SELECT [AGGREGATE]([DISTINCT] alias | selects)
 	 */
 	public String selectClause() {
-		String aggragate = this.aggragate != null ? this.aggragate : "";
+		String aggragate = this.agg != null ? this.agg : "";
 		String distinct = this.distinct ? "DISTINCT" : "";
 		String selects = this.selects.isEmpty() ? getAlias() : String.join(", ", this.selects);
 		return String.format("SELECT %s(%s %s)", aggragate, distinct, selects);
