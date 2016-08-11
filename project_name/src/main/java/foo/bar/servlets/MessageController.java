@@ -10,7 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import core.RepositoryServlet;
+import core.ControllerServlet;
 import foo.bar.entities.Message;
 import foo.bar.repositories.MessageRepository;
 
@@ -18,7 +18,7 @@ import foo.bar.repositories.MessageRepository;
  * Servlet implementation class Message
  */
 @WebServlet("/message")
-public class MessageServlet extends RepositoryServlet<MessageRepository>implements Serializable {
+public class MessageController extends ControllerServlet<MessageRepository>implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -70,11 +70,9 @@ public class MessageServlet extends RepositoryServlet<MessageRepository>implemen
 	}
 
 	public void post(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		getRespository().beginTransaction();
 		String message = request.getParameter("message");
 		Message hello = new Message(message);
 		getRespository().save(hello);
-		getRespository().commit();
 		all(request, response);
 		request.setAttribute("success", "Message was successfully created.");
 	}
@@ -85,9 +83,7 @@ public class MessageServlet extends RepositoryServlet<MessageRepository>implemen
 		if (message == null) {
 			request.setAttribute("warning", "Message does not exist.");
 		} else {
-			getRespository().beginTransaction();
 			getRespository().remove(message);
-			getRespository().commit();
 			request.setAttribute("success", "Message was successfully deleted.");
 		}
 		all(request, response);

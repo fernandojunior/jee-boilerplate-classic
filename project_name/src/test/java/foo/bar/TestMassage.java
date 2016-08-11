@@ -51,14 +51,14 @@ public class TestMassage extends TestCase {
 		Message hello = createMessage("Hello");
 		Message world = createMessage("World");
 
-		messageRepository.beginTransaction();
+		messageRepository.getEntityManager().beginTransaction();
 
 		// Saving to the database
 		messageRepository.save(hello);
 		messageRepository.save(world);
 
 		// Committing the change in the database.
-		messageRepository.commit();
+		messageRepository.getEntityManager().getTransaction().commit();
 
 		// Fetching saved data
 		List<Message> result = messageRepository.findAll();
@@ -68,10 +68,10 @@ public class TestMassage extends TestCase {
 		assertTrue(result.get(0).getContent() == "Hello");
 		assertTrue(result.get(1).getContent() == "World");
 
-		messageRepository.beginTransaction();
+		messageRepository.getEntityManager().beginTransaction();
 		messageRepository.remove(result.get(0));
 		messageRepository.remove(result.get(1));
-		messageRepository.commit();
+		messageRepository.getEntityManager().getTransaction().commit();
 
 		// entityManager.getTransaction().rollback();
 

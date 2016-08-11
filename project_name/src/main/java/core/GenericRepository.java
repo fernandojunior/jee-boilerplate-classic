@@ -7,7 +7,6 @@ import java.util.List;
 import org.hibernate.Criteria;
 import org.hibernate.query.Query;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.hibernate.InstantiationException;
 
 /**
@@ -66,14 +65,6 @@ public class GenericRepository<T extends EntityModel> {
 
 	public EntityFilter<T> createFilter() {
 		return new EntityFilter<T>(entityClass, entityManager);
-	}
-
-	public Transaction beginTransaction() {
-		return entityManager.beginTransaction();
-	}
-
-	public void commit() {
-		entityManager.getTransaction().commit();
 	}
 
 	public Long save(T o) {

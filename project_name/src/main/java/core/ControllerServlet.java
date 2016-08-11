@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 /**
  * Simple repository servlet to serve as controller between Views (JSP pages)
@@ -22,7 +23,7 @@ import org.hibernate.Session;
  * 
  * @author Fernando Felix do Nascimento Junior
  */
-public class RepositoryServlet<R extends GenericRepository<?>> extends HttpServlet {
+public class ControllerServlet<R extends GenericRepository<?>> extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
@@ -67,7 +68,18 @@ public class RepositoryServlet<R extends GenericRepository<?>> extends HttpServl
 		Session entityManager = getEntityManager(request);
 		repository = createRepository(entityManager);
 		String template = getRespository().getEntityName().toLowerCase() + ".jsp";
-		super.service(request, response);
+
+		Transaction transaction = repository.getEntityManager().getTransaction();
+		try {
+			transaction.begin();
+			super.service(request, response);
+			transaction.commit();
+		} catch (Exception e) {
+			if (transaction != null && transaction.isActive())
+				transaction.rollback();
+			throw new ServletException(e);
+		}
+
 		if (!response.isCommitted())
 			forward("WEB-INF/" + template, request, response);
 	}
