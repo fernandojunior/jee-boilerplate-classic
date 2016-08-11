@@ -67,6 +67,10 @@ public class GenericRepository<T extends EntityModel> {
 		return new EntityFilter<T>(entityClass, entityManager);
 	}
 
+	public QueryBuilder<T> createQueryBuilder() {
+		return new QueryBuilder<T>(entityClass, entityManager);
+	}
+
 	public Long save(T o) {
 		return (Long) entityManager.save(o);
 	}
@@ -94,7 +98,7 @@ public class GenericRepository<T extends EntityModel> {
 	}
 
 	public List<T> findAll() {
-		return createFilter().list();
+		return createQueryBuilder().build().getResultList();
 	}
 
 	public static <E extends EntityModel> GenericRepository<E> create(Class<E> entityClass, Session entityManager) {

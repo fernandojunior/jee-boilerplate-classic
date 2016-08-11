@@ -20,7 +20,7 @@ public class MessageRepository extends GenericRepository<Message> {
 	}
 
 	public List<Message> filterByContentAndId(String content, String id) {
-		return this.createFilter().like("content", content).like("id", id).list();
+		return this.createQueryBuilder().like("content", content).like("id", id).build().getResultList();
 	}
 
 }

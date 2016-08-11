@@ -1,4 +1,4 @@
-package foo.bar.servlets;
+package foo.bar.controllers;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -10,7 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import core.ControllerServlet;
+import core.RepositoryController;
 import foo.bar.entities.Message;
 import foo.bar.repositories.MessageRepository;
 
@@ -18,7 +18,7 @@ import foo.bar.repositories.MessageRepository;
  * Servlet implementation class Message
  */
 @WebServlet("/message")
-public class MessageController extends ControllerServlet<MessageRepository>implements Serializable {
+public class MessageController extends RepositoryController<MessageRepository>implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

@@ -10,14 +10,15 @@ import java.util.Map.Entry;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import core.EntityModel;
 
 /**
  * A simple query (select statement) builder.
  *
- * Reference: http://docs.oracle.com/html/E13946_05/ejb3_langref.html
+ * References: http://docs.oracle.com/html/E13946_05/ejb3_langref.html
+ * http://docs.sqlalchemy.org/en/latest/orm/query.html
  * 
  * {@link org.hibernate.jpa.internal.EntityManagerImpl#createQuery(String)}
  * {@link org.hibernate.internal.AbstractSessionImpl#createQuery(String)}
@@ -44,14 +45,16 @@ public class QueryBuilder<E extends EntityModel> {
 	private boolean distinct = false;
 	private Class<E> entityClass;
 	private String aggragate;
+	private EntityManager entityManager;
 	private Set<String> selects = new LinkedHashSet<String>();
 	private Set<String> join = new LinkedHashSet<String>();
 	private Set<String> where = new LinkedHashSet<String>();
 	private Set<String> orderBy = new LinkedHashSet<String>();
 	private Map<String, Object> parameters = new HashMap<String, Object>();
 
-	public QueryBuilder(Class<E> entityClass) {
+	public QueryBuilder(Class<E> entityClass, EntityManager entityManager) {
 		this.entityClass = entityClass;
+		this.entityManager = entityManager;
 	}
 
 	private Class<E> getEntityClass() {
@@ -253,7 +256,7 @@ public class QueryBuilder<E extends EntityModel> {
 	 *            Join association path expression
 	 * @return this
 	 */
-	public QueryBuilder<E> addJoin(String spec, String path) {
+	public QueryBuilder<E> join(String spec, String path) {
 		path = adjustPath(path);
 		List<String> keywords = Arrays.asList("LEFT", "OUTER", "INNER", "JOIN", "FETCH");
 		String[] specPartials = spec.trim().replaceAll("\\s+", " ").split(" ");
@@ -287,22 +290,8 @@ public class QueryBuilder<E extends EntityModel> {
 	 * @return selectClause fromClause [whereClause] [groupby_clause]
 	 *         [orderbyClause]
 	 */
-	public String build() {
-		return String.join("\n", buildSelectClause(), buildFromClause(), buildWhereClause(), buildOrderByClause());
-	}
-
-	/**
-	 * Build a Query from a given entityManager based on this queryBuilder.
-	 * 
-	 * @param entityManager
-	 *            An Entity Manager
-	 * @return A Query
-	 */
-	public Query build(EntityManager entityManager) {
-		Query query = entityManager.createQuery(this.build());
-		for (Entry<String, Object> entry : this.getParameters().entrySet())
-			query.setParameter(entry.getKey(), entry.getValue());
-		return query;
+	public String statement() {
+		return String.join("\n", selectClause(), fromClause(), whereClause(), orderByClause());
 	}
 
 	/**
@@ -314,37 +303,60 @@ public class QueryBuilder<E extends EntityModel> {
 	 *
 	 * @return SELECT [AGGREGATE]([DISTINCT] alias | selects)
 	 */
-	private String buildSelectClause() {
+	public String selectClause() {
 		String aggragate = this.aggragate != null ? this.aggragate : "";
 		String distinct = this.distinct ? "DISTINCT" : "";
 		String selects = this.selects.isEmpty() ? getAlias() : String.join(", ", this.selects);
 		return String.format("SELECT %s(%s %s)", aggragate, distinct, selects);
 	}
 
-	private String buildFromClause() {
-		return String.join(" ", "FROM", getEntityName(), "AS", getAlias(), buildJoinClause());
+	public String fromClause() {
+		return String.join(" ", "FROM", getEntityName(), "AS", getAlias(), joinClause());
 	}
 
-	private String buildJoinClause() {
+	public String joinClause() {
 		if (join.size() == 0)
 			return "";
 		return String.join(", ", join);
 	}
 
-	private String buildWhereClause() {
+	public String whereClause() {
 		if (where.size() == 0)
 			return "";
 		return "WHERE 1 = 1 " + String.join(" ", where);
 	}
 
-	private String buildOrderByClause() {
+	public String orderByClause() {
 		if (orderBy.size() == 0)
 			return "";
 		return "ORDER BY " + String.join(", ", orderBy);
 	}
 
+	/**
+	 * Build a Query based on this queryBuilder.
+	 * 
+	 * @return A Query
+	 */
+	public TypedQuery<E> build() {
+		return build(entityClass);
+	}
+
+	/**
+	 * Build a TypedQuery based on this queryBuilder.
+	 * 
+	 * @param type
+	 *            The type of the query
+	 * @return A typed query
+	 */
+	public <T> TypedQuery<T> build(Class<T> type) {
+		TypedQuery<T> query = entityManager.createQuery(this.statement(), type);
+		for (Entry<String, Object> entry : this.getParameters().entrySet())
+			query.setParameter(entry.getKey(), entry.getValue());
+		return query;
+	}
+
 	public String toString() {
-		return build();
+		return statement();
 	}
 
 }

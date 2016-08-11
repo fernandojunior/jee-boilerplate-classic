@@ -23,7 +23,7 @@ import org.hibernate.Transaction;
  * 
  * @author Fernando Felix do Nascimento Junior
  */
-public class ControllerServlet<R extends GenericRepository<?>> extends HttpServlet {
+public class RepositoryController<R extends GenericRepository<?>> extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
